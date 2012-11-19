@@ -32,6 +32,10 @@ import org.wahlzeit.webparts.*;
  */
 public abstract class AbstractWebPageHandler extends AbstractWebPartHandler implements WebPageHandler {
 	
+	protected AbstractWebPageHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
+	}
+
 	/**
 	 * 
 	 */

@@ -39,6 +39,8 @@ import org.wahlzeit.webparts.*;
  */
 public abstract class AbstractServlet extends HttpServlet {
 	
+	protected ServerMain serverMain;
+	
 	/**
 	 * 
 	 */
@@ -65,6 +67,10 @@ public abstract class AbstractServlet extends HttpServlet {
 	public static synchronized int getNextSessionId() {
 		return ++lastSessionId;
 	}
+		
+	public AbstractServlet(ServerMain serverMain)	{
+		this.serverMain = serverMain;
+	}
 	
 	/**
 	 * 
@@ -73,7 +79,7 @@ public abstract class AbstractServlet extends HttpServlet {
 		UserSession ctx = ensureWebContext(request);	
 		ContextManager.setThreadLocalContext(ctx);
 		
-		if (Wahlzeit.isShuttingDown() || (ctx == null)) {
+		if (serverMain.isShuttingDown() || (ctx == null)) {
 			displayNullPage(request, response);
 		} else {
 			myGet(request, response);
@@ -97,7 +103,7 @@ public abstract class AbstractServlet extends HttpServlet {
 		UserSession ctx = ensureWebContext(request);	
 		ContextManager.setThreadLocalContext(ctx);
 		
-		if (Wahlzeit.isShuttingDown() || (ctx == null)) {
+		if (serverMain.isShuttingDown() || (ctx == null)) {
 			displayNullPage(request, response);
 		} else {
 			myPost(request, response);

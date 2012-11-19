@@ -34,36 +34,15 @@ public class AgentManager {
 	/**
 	 * 
 	 */
-	protected static AgentManager instance = null;
-	
-	/**
-	 * @methodtype initialization
-	 */
-	protected static void initInstance() {
-		getInstance().addAgent(new NotifyAboutPraiseAgent());
-	}
-	
-	/**
-	 * 
-	 */
-	public static synchronized AgentManager getInstance() {
-		if (instance == null) {
-			instance = new AgentManager();
-			initInstance();
-		}
-		return instance;
-	}
-	
-	/**
-	 * 
-	 */
 	protected Map<String, AgentThread> threads = new HashMap<String, AgentThread>();
 	
-	/**
-	 * 
-	 */
-	protected AgentManager() {
-		// do nothing
+	public AgentManager() {
+	}
+	
+	public AgentManager(Agent[] defaultAgents) {
+		for (Agent agent : defaultAgents) {
+			addAgent(agent);
+		}
 	}
 	
 	/**

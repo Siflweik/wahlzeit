@@ -37,7 +37,8 @@ public class ShowPhotoPageHandler extends AbstractWebPageHandler implements WebF
 	/**
 	 * 
 	 */
-	public ShowPhotoPageHandler() {
+	public ShowPhotoPageHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SHOW_PHOTO_PAGE_FILE, AccessRights.GUEST);
 	}
 	
@@ -49,17 +50,16 @@ public class ShowPhotoPageHandler extends AbstractWebPageHandler implements WebF
 		
 		String arg = ctx.getAsString(args, "prior");
 		if (!StringUtil.isNullOrEmptyString(arg)) {
-			ctx.setPriorPhoto(PhotoManager.getPhoto(arg));
+			ctx.setPriorPhoto(super.photoManager.getPhoto(arg));
 		}
 		
 		if (!link.equals(PartUtil.SHOW_PHOTO_PAGE_NAME)) {
-			photo = PhotoManager.getPhoto(link);
+			photo = super.photoManager.getPhoto(link);
 		}
 		
 		if (photo == null) {
-			PhotoManager photoManager = PhotoManager.getInstance();
 			PhotoFilter filter = ctx.getPhotoFilter();
-			photo = photoManager.getVisiblePhoto(filter);
+			photo = super.photoManager.getVisiblePhoto(filter);
 			if (photo != null) {
 				link = photo.getId().asString();
 			}
@@ -221,7 +221,7 @@ public class ShowPhotoPageHandler extends AbstractWebPageHandler implements WebF
 		String result = PartUtil.DEFAULT_PAGE_NAME;
 		
 		String id = ctx.getAndSaveAsString(args, Photo.ID);
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = super.photoManager.getPhoto(id);
 		if (photo != null) {
 			if (ctx.isFormType(args, "flagPhotoLink")) {
 				result = PartUtil.FLAG_PHOTO_PAGE_NAME;

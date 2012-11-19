@@ -42,11 +42,16 @@ import org.wahlzeit.webparts.WebPart;
  */
 public class PraisePhotoFormHandler extends AbstractWebFormHandler {
 	
+	protected AgentManager agentManager;
+	
 	/**
 	 * 
 	 */
-	public PraisePhotoFormHandler() {
+	public PraisePhotoFormHandler(AgentManager agentManager, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.PRAISE_PHOTO_FORM_FILE, AccessRights.GUEST);
+		
+		this.agentManager = agentManager;
 	}
 	
 	/**
@@ -65,7 +70,7 @@ public class PraisePhotoFormHandler extends AbstractWebFormHandler {
 	 */
 	protected boolean isWellFormedPost(UserSession ctx, Map args) {
 		String photoId = ctx.getAsString(args, Photo.ID);
-		Photo photo = PhotoManager.getPhoto(photoId);
+		Photo photo = super.photoManager.getPhoto(photoId);
 		return photo != null;
 	}
 	
@@ -74,7 +79,7 @@ public class PraisePhotoFormHandler extends AbstractWebFormHandler {
 	 */
 	protected String doHandlePost(UserSession ctx, Map args) {
 		String photoId = ctx.getAsString(args, Photo.ID);
-		Photo photo = PhotoManager.getPhoto(photoId);
+		Photo photo = super.photoManager.getPhoto(photoId);
 		String praise = ctx.getAsString(args, Photo.PRAISE);
 
 		boolean wasPraised = false;
@@ -85,7 +90,7 @@ public class PraisePhotoFormHandler extends AbstractWebFormHandler {
 				ctx.addPraisedPhoto(photo);
 				wasPraised = true;
 				if (photo.getOwnerNotifyAboutPraise()) {
-					Agent agent = AgentManager.getInstance().getAgent(NotifyAboutPraiseAgent.NAME);
+					Agent agent = agentManager.getAgent(NotifyAboutPraiseAgent.NAME);
 					NotifyAboutPraiseAgent notify = (NotifyAboutPraiseAgent) agent; 
 					notify.addForNotify(photo);
 				}

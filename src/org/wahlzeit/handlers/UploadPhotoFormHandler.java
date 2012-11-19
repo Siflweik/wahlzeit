@@ -39,7 +39,8 @@ public class UploadPhotoFormHandler extends AbstractWebFormHandler {
 	/**
 	 *
 	 */
-	public UploadPhotoFormHandler() {
+	public UploadPhotoFormHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.UPLOAD_PHOTO_FORM_FILE, AccessRights.USER);
 	}
 	
@@ -65,10 +66,9 @@ public class UploadPhotoFormHandler extends AbstractWebFormHandler {
 		}
 
 		try {
-			PhotoManager pm = PhotoManager.getInstance();
 			String sourceFileName = ctx.getAsString(args, "fileName");
 			File file = new File(sourceFileName);
-			Photo photo = pm.createPhoto(file);
+			Photo photo = super.photoManager.createPhoto(file);
 
 			String targetFileName = SysConfig.getBackupDirAsString() + photo.getId().asString();
 			createBackup(sourceFileName, targetFileName);
@@ -78,7 +78,7 @@ public class UploadPhotoFormHandler extends AbstractWebFormHandler {
 			
 			photo.setTags(new Tags(tags));
 
-			pm.savePhoto(photo);
+			super.photoManager.savePhoto(photo);
 
 			StringBuffer sb = UserLog.createActionEntry("UploadPhoto");
 			UserLog.addCreatedObject(sb, "Photo", photo.getId().asString());

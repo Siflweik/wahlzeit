@@ -21,6 +21,7 @@
 package org.wahlzeit.handlers;
 
 import org.wahlzeit.model.AccessRights;
+import org.wahlzeit.model.PhotoManager;
 import org.wahlzeit.model.UserSession;
 import org.wahlzeit.webparts.WebPart;
 
@@ -40,7 +41,8 @@ public class ShowInfoPageHandler extends AbstractWebPageHandler {
 	/**
 	 *
 	 */
-	public ShowInfoPageHandler(AccessRights myRights, String myInfoTmplName) {
+	public ShowInfoPageHandler(AccessRights myRights, String myInfoTmplName, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SHOW_INFO_PAGE_FILE, myRights);
 		infoTmplName = myInfoTmplName;
 	}

@@ -42,7 +42,8 @@ public class SetOptionsFormHandler extends AbstractWebFormHandler {
 	/**
 	 *
 	 */
-	public SetOptionsFormHandler() {
+	public SetOptionsFormHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SET_OPTIONS_FORM_FILE, AccessRights.GUEST);
 	}
 	

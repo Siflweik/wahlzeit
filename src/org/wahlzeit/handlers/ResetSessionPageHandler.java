@@ -36,7 +36,8 @@ public class ResetSessionPageHandler extends AbstractWebPageHandler {
 	/**
 	 *
 	 */
-	public ResetSessionPageHandler() {
+	public ResetSessionPageHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SHOW_NOTE_PAGE_FILE, AccessRights.GUEST);
 	}
 	

@@ -37,7 +37,8 @@ public class EditUserProfileFormHandler extends AbstractWebFormHandler {
 	/**
 	 *
 	 */
-	public EditUserProfileFormHandler() {
+	public EditUserProfileFormHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.EDIT_USER_PROFILE_FORM_FILE, AccessRights.USER);
 	}
 	

@@ -22,6 +22,8 @@ package org.wahlzeit.tools;
 
 import java.io.*;
 
+import org.wahlzeit.services.mailing.EmailServer;
+import org.wahlzeit.services.mailing.SmtpEmailServer;
 import org.wahlzeit.utils.*;
 import org.wahlzeit.main.*;
 import org.wahlzeit.model.*;
@@ -32,12 +34,20 @@ import org.wahlzeit.model.*;
  *
  */
 public class CreateUser extends ModelMain {
-	
+
+	protected CreateUser(UserManager userManager, PhotoManager photoManager) {
+		super(userManager, photoManager);
+	}
+
 	/**
 	 * 
 	 */
 	public static void main(String[] argv) {
-		instance = new CreateUser();
+		EmailServer emailServer = new SmtpEmailServer();
+		PhotoManager photoManager = new PhotoManager(null);
+		UserManager userManager = new UserManager(emailServer, photoManager);
+		
+		CreateUser instance = new CreateUser(userManager, photoManager);
 		instance.run(argv);
 	}
 	
@@ -72,12 +82,10 @@ public class CreateUser extends ModelMain {
 	 * 
 	 */
 	protected void execute() throws Exception {
-		UserManager userManager = UserManager.getInstance();
 		long confirmationCode = userManager.createConfirmationCode();
-		User user = new User(userName, password, "info@wahlzeit.org", confirmationCode);
+		User user = new User(userName, password, "info@wahlzeit.org", confirmationCode, photoManager);
 		userManager.addUser(user);
 		
-		PhotoManager photoManager = PhotoManager.getInstance();
 		File photoDirFile = new File(photoDir);
 		FileFilter photoFileFilter = new FileFilter() {
 			public boolean accept(File file) {

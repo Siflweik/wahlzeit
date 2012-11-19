@@ -35,6 +35,22 @@ import org.wahlzeit.webparts.*;
  */
 public abstract class ModelMain extends AbstractMain {
 	
+	protected UserManager userManager;
+	protected PhotoManager photoManager;
+	
+	protected ModelMain(UserManager userManager, PhotoManager photoManager)	{
+		this.userManager = userManager;
+		this.photoManager = photoManager;
+		
+		registerAtPhotoManager();
+	}
+	
+	protected void registerAtPhotoManager()	{
+		if (photoManager != null)	{
+			photoManager.setModelMain(this);
+		}
+	}
+	
 	/**
 	 * 
 	 */
@@ -58,7 +74,7 @@ public abstract class ModelMain extends AbstractMain {
 	/**
 	 * 
 	 */
-	public static void loadGlobals() throws SQLException {
+	public void loadGlobals() throws SQLException {
 		DatabaseConnection dbc = ContextManager.getDatabaseConnection();
 		Connection conn = dbc.getRdbmsConnection();
 
@@ -90,7 +106,7 @@ public abstract class ModelMain extends AbstractMain {
 	/**
 	 *
 	 */
-	public static synchronized void saveGlobals() throws SQLException {
+	public synchronized void saveGlobals() throws SQLException {
 		DatabaseConnection dbc = ContextManager.getDatabaseConnection();
 		Connection conn = dbc.getRdbmsConnection();
 
@@ -123,10 +139,10 @@ public abstract class ModelMain extends AbstractMain {
 	/**
 	 * 
 	 */
-	public static void saveAll() throws SQLException {
+	public void saveAll() throws SQLException {
 		PhotoCaseManager.getInstance().savePhotoCases();
-		PhotoManager.getInstance().savePhotos();			
-		UserManager.getInstance().saveUsers();
+		photoManager.savePhotos();			
+		userManager.saveUsers();
 
 		saveGlobals();
 	}
@@ -134,9 +150,8 @@ public abstract class ModelMain extends AbstractMain {
 	/**
 	 * 
 	 */
-	public static void configureWebPartTemplateServer() {
+	public void configureWebPartTemplateServer() {
 		ConfigDir templatesDir = SysConfig.getTemplatesDir();
 		WebPartTemplateServer.getInstance().setTemplatesDir(templatesDir);
-	}
-	
+	}	
 }

@@ -23,6 +23,7 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.AccessRights;
+import org.wahlzeit.model.PhotoManager;
 import org.wahlzeit.model.PhotoSize;
 import org.wahlzeit.model.UserSession;
 import org.wahlzeit.utils.HtmlUtil;
@@ -40,7 +41,8 @@ public class SetPhotoSizePageHandler extends AbstractWebPageHandler {
 	/**
 	 * 
 	 */
-	public SetPhotoSizePageHandler() {
+	public SetPhotoSizePageHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SHOW_NOTE_PAGE_FILE, AccessRights.GUEST);
 	}
 	

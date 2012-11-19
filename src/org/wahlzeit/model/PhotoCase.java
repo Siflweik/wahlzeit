@@ -54,12 +54,16 @@ public class PhotoCase extends Case {
 	protected boolean wasDecided = false;
 	protected long decidedOn = 0;
 	
+	protected PhotoManager photoManager;
+	
 	/**
 	 * 
 	 */
-	public PhotoCase(Photo myPhoto) {
+	public PhotoCase(Photo myPhoto, PhotoManager photoManager) {
 		id = getNextCaseId();
 		photo = myPhoto;
+		
+		this.photoManager = photoManager;
 		
 		incWriteCount();
 	}
@@ -83,7 +87,7 @@ public class PhotoCase extends Case {
 	 */
 	public void readFrom(ResultSet rset) throws SQLException {
 		id = rset.getInt("id");
-		photo = PhotoManager.getPhoto(PhotoId.getId(rset.getInt("photo")));
+		photo = photoManager.getPhotoFromId(PhotoId.getId(rset.getInt("photo")));
 		createdOn = rset.getLong("creation_time");
 		
 		flagger = rset.getString("flagger");

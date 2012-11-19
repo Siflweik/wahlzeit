@@ -35,8 +35,8 @@ public class RunScript extends AbstractMain {
 	 * 
 	 */
 	public static void main(String[] argv) {
-		instance = new RunScript();
-		instance.run(argv);
+		RunScript runScript = new RunScript();
+		runScript.run(argv);
 	}
 	
 	/**

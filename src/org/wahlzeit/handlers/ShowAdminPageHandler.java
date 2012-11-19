@@ -35,11 +35,18 @@ import org.wahlzeit.webparts.*;
  */
 public class ShowAdminPageHandler extends AbstractWebPageHandler implements WebFormHandler {
 	
+	protected UserManager userManager;
+	protected ServerMain serverMain;
+	
 	/**
 	 * 
 	 */
-	public ShowAdminPageHandler() {
+	public ShowAdminPageHandler(UserManager userManager, ServerMain serverMain, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SHOW_ADMIN_PAGE_FILE, AccessRights.ADMINISTRATOR);
+		
+		this.userManager = userManager;
+		this.serverMain = serverMain;		
 	}
 
 	/**
@@ -69,7 +76,7 @@ public class ShowAdminPageHandler extends AbstractWebPageHandler implements WebF
 		WebFormHandler handler = getFormHandler(PartUtil.NULL_FORM_NAME);
 
 		String userId = ctx.getSavedArg("userId").toString();
-		User user = UserManager.getInstance().getUserByName(userId);
+		User user = userManager.getUserByName(userId);
 		if (user != null) {
 			handler = getFormHandler(PartUtil.ADMIN_USER_PROFILE_FORM_NAME);
 		}
@@ -84,7 +91,7 @@ public class ShowAdminPageHandler extends AbstractWebPageHandler implements WebF
 		WebFormHandler handler = getFormHandler(PartUtil.NULL_FORM_NAME);
 
 		String photoId = ctx.getSavedArg("photoId").toString();
-		Photo photo = PhotoManager.getPhoto(photoId);
+		Photo photo = super.photoManager.getPhoto(photoId);
 		if (photo != null) {
 			handler = getFormHandler(PartUtil.ADMIN_USER_PHOTO_FORM_NAME);
 		}
@@ -121,7 +128,7 @@ public class ShowAdminPageHandler extends AbstractWebPageHandler implements WebF
 	 */
 	protected String performAdminUserProfileRequest(UserSession ctx, Map args) {
 		String userId = ctx.getAndSaveAsString(args, "userId");
-		User user = UserManager.getInstance().getUserByName(userId);
+		User user = userManager.getUserByName(userId);
 		if (user == null) {
 			ctx.setMessage(ctx.cfg().getUserNameIsUnknown());
 		}
@@ -134,7 +141,7 @@ public class ShowAdminPageHandler extends AbstractWebPageHandler implements WebF
 	 */
 	protected String performAdminUserPhotoRequest(UserSession ctx, Map args) {
 		String photoId = ctx.getAndSaveAsString(args, "photoId");
-		Photo photo = PhotoManager.getPhoto(photoId);
+		Photo photo = super.photoManager.getPhoto(photoId);
 		if (photo == null) {
 			ctx.setMessage(ctx.cfg().getPhotoIsUnknown());
 		}
@@ -149,7 +156,7 @@ public class ShowAdminPageHandler extends AbstractWebPageHandler implements WebF
 		SysLog.logInfo("shutting down");
 		
 		try {
-			Wahlzeit.requestStop();
+			serverMain.requestStop();
 		} catch (Exception ex) {
 			SysLog.logThrowable(ex);
 		}
@@ -163,9 +170,9 @@ public class ShowAdminPageHandler extends AbstractWebPageHandler implements WebF
 	 */
 	protected String performSaveAllRequest(UserSession ctx) {
 		SysLog.logInfo("saving objects");
-
+		
 		try {
-			Wahlzeit.saveAll();
+			serverMain.saveAll();
 		} catch (Exception ex) {
 			SysLog.logThrowable(ex);
 		}

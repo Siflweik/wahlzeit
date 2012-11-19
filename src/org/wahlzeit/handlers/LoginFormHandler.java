@@ -23,6 +23,7 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.AccessRights;
+import org.wahlzeit.model.PhotoManager;
 import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserManager;
@@ -39,11 +40,16 @@ import org.wahlzeit.webparts.WebPart;
  */
 public class LoginFormHandler extends AbstractWebFormHandler {
 	
+	protected UserManager userManager;
+	
 	/**
 	 *
 	 */
-	public LoginFormHandler() {
+	public LoginFormHandler(UserManager userManager, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.LOGIN_FORM_FILE, AccessRights.GUEST);
+		
+		this.userManager = userManager;
 	}
 
 	/**
@@ -64,9 +70,7 @@ public class LoginFormHandler extends AbstractWebFormHandler {
 	protected String doHandlePost(UserSession ctx, Map args) {
 		String userName = ctx.getAndSaveAsString(args, User.NAME);
 		String password = ctx.getAndSaveAsString(args, User.PASSWORD);
-		
-		UserManager userManager = UserManager.getInstance();
-		
+
 		if (StringUtil.isNullOrEmptyString(userName)) {
 			ctx.setMessage(ctx.cfg().getFieldIsMissing());
 			return PartUtil.LOGIN_PAGE_NAME;
@@ -97,12 +101,12 @@ public class LoginFormHandler extends AbstractWebFormHandler {
 					user.setConfirmed();
 					ctx.setTwoLineMessage(ctx.cfg().getConfirmAccountSucceeded(), ctx.cfg().getContinueWithShowUserHome());
 				} else {
-					UserManager.getInstance().emailConfirmationRequest(ctx, user);
+					userManager.emailConfirmationRequest(ctx, user);
 					ctx.setTwoLineMessage(ctx.cfg().getConfirmAccountFailed(), ctx.cfg().getConfirmationEmailWasSent());
 				}
 				ctx.clearConfirmationCode();
 			} else {
-				UserManager.getInstance().emailConfirmationRequest(ctx, user);
+				userManager.emailConfirmationRequest(ctx, user);
 				ctx.setTwoLineMessage(ctx.cfg().getConfirmationEmailWasSent(), ctx.cfg().getContinueWithShowUserHome());
 			}
 			return PartUtil.SHOW_NOTE_PAGE_NAME;

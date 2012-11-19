@@ -36,7 +36,8 @@ public class FilterPhotosFormHandler extends AbstractWebFormHandler {
 	/**
 	 * 
 	 */
-	public FilterPhotosFormHandler() {
+	public FilterPhotosFormHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.FILTER_PHOTOS_FORM_FILE, AccessRights.GUEST);
 	}
 	

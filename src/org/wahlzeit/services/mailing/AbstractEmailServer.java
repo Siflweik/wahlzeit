@@ -4,9 +4,10 @@ import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
 
 import org.wahlzeit.services.EmailAddress;
+import org.wahlzeit.services.SysLog;
 
 public abstract class AbstractEmailServer implements EmailServer {
-	
+
 	@Override
 	public void sendEmail(EmailAddress from, EmailAddress to, String subject, String body) throws MailingException {
 		sendEmail(from, to, EmailAddress.NONE, subject, body);
@@ -30,6 +31,25 @@ public abstract class AbstractEmailServer implements EmailServer {
 		}
 	}
 
+	@Override
+	public boolean sendEmailSilently(EmailAddress from, EmailAddress to, String subject, String body) {
+		return sendEmailSilently(from, to, EmailAddress.NONE, subject, body);
+	}
+	
+	@Override
+	public boolean sendEmailSilently(EmailAddress from, EmailAddress to, EmailAddress bcc, String subject, String body) {
+		boolean success = true;
+		
+		try {
+			sendEmail(from, to, bcc, subject, body);
+		} catch (MailingException e) {
+			success = false;
+			SysLog.logThrowable(e);
+		}
+		
+		return success;
+	}
+	
 	protected void assertAddressHasValidSyntax(EmailAddress address, String label) throws MailingException {
 		boolean error = (address == null || address.asString() == null);
 

@@ -24,6 +24,7 @@ import java.util.*;
 
 import org.wahlzeit.model.AccessRights;
 import org.wahlzeit.model.Photo;
+import org.wahlzeit.model.PhotoManager;
 import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserSession;
 import org.wahlzeit.utils.HtmlUtil;
@@ -41,7 +42,8 @@ public class ShowUserProfileFormHandler extends AbstractWebFormHandler {
 	/**
 	 *
 	 */
-	public ShowUserProfileFormHandler() {
+	public ShowUserProfileFormHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SHOW_USER_PROFILE_FORM_FILE, AccessRights.USER);
 	}
 	

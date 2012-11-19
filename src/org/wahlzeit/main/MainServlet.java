@@ -51,6 +51,14 @@ public class MainServlet extends AbstractServlet {
 	 */
 	private static final long serialVersionUID = 42L; // any one does; class never serialized
 
+	protected WebPartHandlerManager handlerManager;
+	
+	public MainServlet(WebPartHandlerManager handlerManager, ServerMain serverMain)	{
+		super(serverMain);
+		
+		this.handlerManager = handlerManager;
+	}
+	
 	/**
 	 * 
 	 */
@@ -68,7 +76,7 @@ public class MainServlet extends AbstractServlet {
 		link = link.substring(linkStart, linkEnd);
 		UserLog.logValue("requested", link);
 
-		WebPageHandler handler = WebPartHandlerManager.getWebPageHandler(link);
+		WebPageHandler handler = handlerManager.getWebPageHandlerFor(link);
 		String newLink = PartUtil.DEFAULT_PAGE_NAME;
 		if (handler != null) {
 			Map args = getRequestArgs(request);
@@ -109,7 +117,7 @@ public class MainServlet extends AbstractServlet {
 		Map args = getRequestArgs(request);
 		SysLog.logInfo("POST arguments: " + getRequestArgsAsString(ctx, args));
 		
-		WebFormHandler formHandler = WebPartHandlerManager.getWebFormHandler(link);
+		WebFormHandler formHandler = handlerManager.getWebFormHandlerFor(link);
 		link = PartUtil.DEFAULT_PAGE_NAME;
 		if (formHandler != null) {
 			link = formHandler.handlePost(ctx, args);

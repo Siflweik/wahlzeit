@@ -34,7 +34,8 @@ public class ShowUserHomePageHandler extends AbstractWebPageHandler {
 	/**
 	 *
 	 */
-	public ShowUserHomePageHandler() {
+	public ShowUserHomePageHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SHOW_USER_HOME_PAGE_FILE, AccessRights.USER);
 	}
 

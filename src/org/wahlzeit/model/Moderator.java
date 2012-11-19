@@ -33,22 +33,27 @@ public class Moderator extends User {
 	/**
 	 * 
 	 */
-	public Moderator(String myName, String myPassword, String myEmailAddress, long vc) {
-		this(myName, myPassword, EmailAddress.getFromString(myEmailAddress), vc);
+	public Moderator(String myName, String myPassword, String myEmailAddress, long vc, PhotoManager photoManager) {
+		super(AccessRights.MODERATOR, myName, myPassword, myEmailAddress, vc, photoManager);
 	}
 	
 	/**
 	 * 
 	 */
-	public Moderator(String myName, String myPassword, EmailAddress myEmailAddress, long vc) {
-		initialize(AccessRights.MODERATOR, myEmailAddress, myName, myPassword, vc);
+	public Moderator(String myName, String myPassword, EmailAddress myEmailAddress, long vc, PhotoManager photoManager) {
+		super(AccessRights.MODERATOR, myName, myPassword, myEmailAddress, vc, photoManager);
+	}		
+	
+	public Moderator(PhotoManager photoManager)	{
+		super(photoManager);	
 	}
 	
-	/**
-	 * 
-	 */
-	protected Moderator() {
-		// do nothing
+	protected Moderator(AccessRights accessRights, String myName, String myPassword, String myEmailAddress, long vc, PhotoManager photoManager) {
+		super(accessRights, myName, myPassword, myEmailAddress, vc, photoManager);
 	}
-		
+
+	
+	protected Moderator(AccessRights accessRights, String myName, String myPassword, EmailAddress myEmailAddress, long vc, PhotoManager photoManager) {
+		super(accessRights, myName, myPassword, myEmailAddress, vc, photoManager);
+	}
 }

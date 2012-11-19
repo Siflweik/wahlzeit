@@ -33,38 +33,12 @@ public class WebPartHandlerManager {
 	/**
 	 * 
 	 */
-	public static WebPageHandler getWebPageHandler(String name) {
-		return instance.getWebPageHandlerFor(name);
-	}
-	
-	/**
-	 * 
-	 */
-	public static WebFormHandler getWebFormHandler(String name) {
-		return instance.getWebFormHandlerFor(name);
-	}
-	
-	/**
-	 * 
-	 */
-	public static WebPartHandlerManager getInstance() {
-		return instance;
-	}
-	
-	/**
-	 * 
-	 */
-	protected static final WebPartHandlerManager instance = new WebPartHandlerManager();
-	
-	/**
-	 * 
-	 */
 	protected Map<String, WebPartHandler> handler = new HashMap<String, WebPartHandler>();
 	
 	/**
 	 * 
 	 */
-	protected WebPartHandlerManager() {
+	public WebPartHandlerManager() {
 		// do nothing
 	}
 

@@ -23,6 +23,7 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.AccessRights;
+import org.wahlzeit.model.PhotoManager;
 import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserManager;
@@ -39,11 +40,16 @@ import org.wahlzeit.webparts.WebPart;
  */
 public class SignupFormHandler extends AbstractWebFormHandler {
 	
+	protected UserManager userManager;
+	
 	/**
 	 *
 	 */
-	public SignupFormHandler() {
+	public SignupFormHandler(UserManager userManager, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SIGNUP_FORM_FILE, AccessRights.GUEST);
+		
+		this.userManager = userManager;
 	}
 	
 	/**
@@ -71,9 +77,7 @@ public class SignupFormHandler extends AbstractWebFormHandler {
 		String passwordAgain = ctx.getAndSaveAsString(args, User.PASSWORD_AGAIN);
 		String emailAddress = ctx.getAndSaveAsString(args, User.EMAIL_ADDRESS);
 		String terms = ctx.getAndSaveAsString(args, User.TERMS);
-		
-		UserManager userManager = UserManager.getInstance();
-		
+
 		if (StringUtil.isNullOrEmptyString(userName)) {
 			ctx.setMessage(ctx.cfg().getFieldIsMissing());
 			return PartUtil.SIGNUP_PAGE_NAME;
@@ -107,7 +111,7 @@ public class SignupFormHandler extends AbstractWebFormHandler {
 		}
 
 		long confirmationCode = userManager.createConfirmationCode();
-		User user = new User(userName, password, emailAddress, confirmationCode);
+		User user = new User(userName, password, emailAddress, confirmationCode, photoManager);
 		userManager.addUser(user);
 		
 		userManager.emailWelcomeMessage(ctx, user);

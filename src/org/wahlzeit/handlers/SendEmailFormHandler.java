@@ -29,7 +29,7 @@ import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserManager;
 import org.wahlzeit.model.UserSession;
-import org.wahlzeit.services.EmailServer;
+import org.wahlzeit.services.mailing.EmailServer;
 import org.wahlzeit.webparts.WebPart;
 
 
@@ -40,6 +40,9 @@ import org.wahlzeit.webparts.WebPart;
  *
  */
 public class SendEmailFormHandler extends AbstractWebFormHandler {
+	
+	protected EmailServer emailServer;
+	protected UserManager userManager;
 	
 	/**
 	 * 
@@ -52,8 +55,12 @@ public class SendEmailFormHandler extends AbstractWebFormHandler {
 	/**
 	 *
 	 */
-	public SendEmailFormHandler() {
+	public SendEmailFormHandler(EmailServer emailServer, UserManager userManager, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SEND_EMAIL_FORM_FILE, AccessRights.GUEST);
+		
+		this.emailServer = emailServer;
+		this.userManager = userManager;
 	}
 	
 	/**
@@ -85,7 +92,7 @@ public class SendEmailFormHandler extends AbstractWebFormHandler {
 		
 		String id = ctx.getAndSaveAsString(args, Photo.ID);
 		part.addString(Photo.ID, id);
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = super.photoManager.getPhoto(id);
 		part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));
 
 		part.maskAndAddString(USER, photo.getOwnerName());
@@ -101,7 +108,7 @@ public class SendEmailFormHandler extends AbstractWebFormHandler {
 	 * 
 	 */
 	protected boolean isWellFormedPost(UserSession ctx, Map args) {
-		return PhotoManager.getPhoto(ctx.getAsString(args, Photo.ID)) != null;
+		return super.photoManager.getPhoto(ctx.getAsString(args, Photo.ID)) != null;
 	}
 	
 	/**
@@ -109,7 +116,7 @@ public class SendEmailFormHandler extends AbstractWebFormHandler {
 	 */
 	protected String doHandlePost(UserSession ctx, Map args) {
 		String id = ctx.getAndSaveAsString(args, Photo.ID);
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = super.photoManager.getPhoto(id);
 
 		String emailSubject = ctx.getAndSaveAsString(args, EMAIL_SUBJECT);
 		String emailBody = ctx.getAndSaveAsString(args, EMAIL_BODY);
@@ -118,14 +125,13 @@ public class SendEmailFormHandler extends AbstractWebFormHandler {
 			return PartUtil.SEND_EMAIL_PAGE_NAME;			
 		}
 
-		UserManager userManager = UserManager.getInstance();
 		User toUser = userManager.getUserByName(photo.getOwnerName());
 		User fromUser = (User) ctx.getClient();
 
-		EmailServer emailServer = EmailServer.getInstance();
 		emailSubject = ctx.cfg().getSendEmailSubjectPrefix() + emailSubject;
 		emailBody = ctx.cfg().getSendEmailBodyPrefix() + emailBody + ctx.cfg().getSendEmailBodyPostfix();
-		emailServer.sendEmail(fromUser.getEmailAddress(), toUser.getEmailAddress(), ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
+		
+		emailServer.sendEmailSilently(fromUser.getEmailAddress(), toUser.getEmailAddress(), ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
 
 		UserLog.logPerformedAction("SendEmail");
 		

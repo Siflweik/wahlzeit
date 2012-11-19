@@ -28,8 +28,8 @@ import org.wahlzeit.model.LanguageConfigs;
 import org.wahlzeit.model.Photo;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.services.EmailAddress;
-import org.wahlzeit.services.EmailServer;
 import org.wahlzeit.services.SysConfig;
+import org.wahlzeit.services.mailing.EmailServer;
 
 
 /**
@@ -49,11 +49,15 @@ public class NotifyAboutPraiseAgent extends Agent {
 	 */
 	protected Set<Photo> praisedPhotos = new HashSet<Photo>();
 	
+	protected EmailServer emailServer;
+	
 	/**
 	 * 
 	 */
-	public NotifyAboutPraiseAgent() {
+	public NotifyAboutPraiseAgent(EmailServer emailServer) {
 		initialize(NAME, 3 * 24 * 60 * 60 * 1000); // every three days
+		
+		this.emailServer = emailServer;
 	}
 	
 	/**
@@ -117,8 +121,7 @@ public class NotifyAboutPraiseAgent extends Agent {
 		emailBody += cfg.getNotifyAboutPraiseEmailPostScriptum() + "\n\n----\n";
 		emailBody += cfg.getGeneralEmailFooter() + "\n\n";
 
-		EmailServer emailServer = EmailServer.getInstance();
-		emailServer.sendEmail(from, to, emailSubject, emailBody);
+		emailServer.sendEmailSilently(from, to, emailSubject, emailBody);
 	}
 
 }

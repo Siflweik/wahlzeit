@@ -25,6 +25,7 @@ import java.util.*;
 import org.wahlzeit.model.AccessRights;
 import org.wahlzeit.model.ModelConfig;
 import org.wahlzeit.model.LanguageConfigs;
+import org.wahlzeit.model.PhotoManager;
 import org.wahlzeit.model.UserSession;
 import org.wahlzeit.services.Language;
 import org.wahlzeit.utils.HtmlUtil;
@@ -42,7 +43,8 @@ public class SetLanguagePageHandler extends AbstractWebPageHandler {
 	/**
 	 * 
 	 */
-	public SetLanguagePageHandler() {
+	public SetLanguagePageHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SHOW_NOTE_PAGE_FILE, AccessRights.GUEST);
 	}
 	

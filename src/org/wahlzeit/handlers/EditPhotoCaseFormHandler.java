@@ -26,6 +26,7 @@ import org.wahlzeit.model.AccessRights;
 import org.wahlzeit.model.Photo;
 import org.wahlzeit.model.PhotoCase;
 import org.wahlzeit.model.PhotoCaseManager;
+import org.wahlzeit.model.PhotoManager;
 import org.wahlzeit.model.PhotoStatus;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserSession;
@@ -46,7 +47,8 @@ public class EditPhotoCaseFormHandler extends AbstractWebFormHandler {
 	/**
 	 *
 	 */
-	public EditPhotoCaseFormHandler() {
+	public EditPhotoCaseFormHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.EDIT_PHOTO_CASE_FORM_FILE, AccessRights.MODERATOR);
 	}
 	

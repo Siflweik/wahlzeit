@@ -20,7 +20,15 @@
 
 package org.wahlzeit.main;
 
+import org.wahlzeit.agents.Agent;
+import org.wahlzeit.agents.AgentManager;
+import org.wahlzeit.agents.NotifyAboutPraiseAgent;
+import org.wahlzeit.handlers.WebPartHandlerManager;
+import org.wahlzeit.model.PhotoManager;
+import org.wahlzeit.model.UserManager;
 import org.wahlzeit.services.*;
+import org.wahlzeit.services.mailing.EmailServer;
+import org.wahlzeit.services.mailing.SmtpEmailServer;
 
 /**
  * 
@@ -29,11 +37,25 @@ import org.wahlzeit.services.*;
  */
 public class Wahlzeit extends ServerMain {
 
+	protected Wahlzeit(UserManager userManager, AgentManager agentManager, EmailServer emailServer, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(userManager, agentManager, emailServer, handlerManager, photoManager);
+	}
+
 	/**
-	 * 
+	 * Create and wire the individual components together
 	 */
 	public static void main(String[] argv) {
-		instance = new Wahlzeit();
+		EmailServer emailServer = new SmtpEmailServer();
+		PhotoManager photoManager = new PhotoManager(null);
+		
+		UserManager userManager = new UserManager(emailServer, photoManager);
+		
+		Agent[] defaultAgents = new Agent[] { new NotifyAboutPraiseAgent(emailServer) };
+		
+		AgentManager agentManager = new AgentManager(defaultAgents);
+		WebPartHandlerManager handlerManager = new WebPartHandlerManager();
+
+		Wahlzeit instance = new Wahlzeit(userManager, agentManager, emailServer, handlerManager, photoManager);
 		instance.run(argv);
 	}
 

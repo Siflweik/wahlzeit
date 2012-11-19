@@ -24,6 +24,7 @@ import java.util.*;
 
 import org.wahlzeit.model.*;
 import org.wahlzeit.services.*;
+import org.wahlzeit.services.mailing.EmailServer;
 import org.wahlzeit.utils.*;
 import org.wahlzeit.webparts.*;
 
@@ -34,11 +35,16 @@ import org.wahlzeit.webparts.*;
  */
 public class FlagPhotoFormHandler extends AbstractWebFormHandler {
 	
+	protected EmailServer emailServer;
+	
 	/**
 	 *
 	 */
-	public FlagPhotoFormHandler() {
+	public FlagPhotoFormHandler(EmailServer emailServer, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager); 
 		initialize(PartUtil.FLAG_PHOTO_FORM_FILE, AccessRights.GUEST);
+		
+		this.emailServer = emailServer;
 	}
 
 	/**
@@ -56,7 +62,7 @@ public class FlagPhotoFormHandler extends AbstractWebFormHandler {
 		part.addStringFromArgs(args, UserSession.MESSAGE);
 		
 		String id = ctx.getAsString(args, Photo.ID);
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = super.photoManager.getPhoto(id);
 		part.addString(Photo.ID, id);
 		part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));
 		part.maskAndAddStringFromArgsWithDefault(args, PhotoCase.FLAGGER, ctx.getEmailAddressAsString());
@@ -84,12 +90,11 @@ public class FlagPhotoFormHandler extends AbstractWebFormHandler {
 			return PartUtil.FLAG_PHOTO_PAGE_NAME;			
 		}
 		
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = super.photoManager.getPhoto(id);
 		photo.setStatus(photo.getStatus().asFlagged(true));
-		PhotoManager pm = PhotoManager.getInstance();
-		pm.savePhoto(photo);
+		super.photoManager.savePhoto(photo);
 		
-		PhotoCase photoCase = new PhotoCase(photo);
+		PhotoCase photoCase = new PhotoCase(photo, photoManager);
 		photoCase.setFlagger(flagger);
 		photoCase.setReason(reason);
 		photoCase.setExplanation(explanation);
@@ -97,7 +102,6 @@ public class FlagPhotoFormHandler extends AbstractWebFormHandler {
 		pcm.addPhotoCase(photoCase);
 		
 		EmailAddress from = EmailAddress.getFromString(flagger);
-		EmailServer emailServer = EmailServer.getInstance();
 		EmailAddress to = ctx.cfg().getModeratorEmailAddress();
 
 		String emailSubject = "Photo: " + id + " of user: " + photo.getOwnerName() + " got flagged";
@@ -105,7 +109,7 @@ public class FlagPhotoFormHandler extends AbstractWebFormHandler {
 		emailBody += "Reason: " + reason + "\n\n";
 		emailBody += "Explanation: " + explanation + "\n\n";
 		
-		emailServer.sendEmail(from, to, ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
+		emailServer.sendEmailSilently(from, to, ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
 		
 		ctx.setEmailAddress(from);
 

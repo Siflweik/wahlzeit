@@ -23,6 +23,7 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.AccessRights;
+import org.wahlzeit.model.PhotoManager;
 import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserSession;
@@ -41,7 +42,8 @@ public class ChangePasswordFormHandler extends AbstractWebFormHandler {
 	/**
 	 *
 	 */
-	public ChangePasswordFormHandler() {
+	public ChangePasswordFormHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.CHANGE_PASSWORD_FORM_FILE, AccessRights.USER);
 	}
 	

@@ -33,11 +33,16 @@ import org.wahlzeit.webparts.*;
  */
 public class ConfirmAccountPageHandler extends AbstractWebPageHandler {
 	
+	protected UserManager userManager;
+	
 	/**
 	 *
 	 */
-	public ConfirmAccountPageHandler() {
+	public ConfirmAccountPageHandler(UserManager userManager, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SHOW_NOTE_PAGE_FILE, AccessRights.GUEST);
+		
+		this.userManager = userManager;
 	}
 	
 	/**
@@ -67,7 +72,7 @@ public class ConfirmAccountPageHandler extends AbstractWebPageHandler {
 			if (user.getConfirmationCode() == confirmationCode) {
 				user.setConfirmed();
 			} else {
-				UserManager.getInstance().emailConfirmationRequest(ctx, user);
+				userManager.emailConfirmationRequest(ctx, user);
 			}
 			ctx.clearConfirmationCode();
 		}

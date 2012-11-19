@@ -34,22 +34,18 @@ public class Administrator extends Moderator {
 	/**
 	 * 
 	 */
-	public Administrator(String myName, String myPassword, String myEmailAddress, long vc) {
-		this(myName, myPassword, EmailAddress.getFromString(myEmailAddress), vc);
+	public Administrator(String myName, String myPassword, String myEmailAddress, long vc, PhotoManager photoManager) {
+		super(AccessRights.ADMINISTRATOR, myName, myPassword, myEmailAddress, vc, photoManager);
 	}
 	
 	/**
 	 * 
 	 */
-	public Administrator(String myName, String myPassword, EmailAddress myEmailAddress, long vc) {
-		initialize(AccessRights.ADMINISTRATOR, myEmailAddress, myName, myPassword, vc);
+	public Administrator(String myName, String myPassword, EmailAddress myEmailAddress, long vc, PhotoManager photoManager) {
+		super(AccessRights.ADMINISTRATOR, myName, myPassword, myEmailAddress, vc, photoManager);
 	}
 	
-	/**
-	 * 
-	 */
-	protected Administrator() {
-		// do nothing
+	public Administrator(PhotoManager photoManager)	{
+		super(photoManager);	
 	}
-		
 }

@@ -98,6 +98,8 @@ public class User extends Client implements Persistent {
 	protected String name;
 	protected String nameAsTag;
 	protected String password;
+		
+	protected PhotoManager photoManager;
 	
 	/**
 	 * 
@@ -123,35 +125,46 @@ public class User extends Client implements Persistent {
 	/**
 	 * 
 	 */
-	public User(String myName, String myPassword, String myEmailAddress, long vc) {
-		this(myName, myPassword, EmailAddress.getFromString(myEmailAddress), vc);
+	public User(String myName, String myPassword, String myEmailAddress, long vc, PhotoManager photoManager) {
+		this(myName, myPassword, EmailAddress.getFromString(myEmailAddress), vc, photoManager);
 	}
 	
 	/**
 	 * 
 	 */
-	public User(String myName, String myPassword, EmailAddress myEmailAddress, long vc) {
-		initialize(AccessRights.USER, myEmailAddress, myName, myPassword, vc);
+	public User(String myName, String myPassword, EmailAddress myEmailAddress, long vc, PhotoManager photoManager) {
+		this(AccessRights.USER, myName, myPassword, myEmailAddress, vc, photoManager);
 	}
 	
 	/**
 	 * 
 	 */
-	public User(ResultSet rset) throws SQLException {
+	public User(ResultSet rset, PhotoManager photoManager) throws SQLException {
+		this(photoManager);
+
 		readFrom(rset);
 	}
 	
+	public User(PhotoManager photoManager)	{
+		this.photoManager = photoManager;		
+	}
+	
 	/**
 	 * 
 	 */
-	protected User() {
-		// do nothing
+	protected User(AccessRights accessRights, String myName, String myPassword, String myEmailAddress, long vc, PhotoManager photoManager) {
+		this(accessRights, myName, myPassword, EmailAddress.getFromString(myEmailAddress), vc, photoManager);
+	}
+
+	
+	protected User(AccessRights accessRights, String myName, String myPassword, EmailAddress myEmailAddress, long vc, PhotoManager photoManager) {
+		initialize(accessRights, myEmailAddress, myName, myPassword, vc, photoManager);
 	}
 
 	/**
 	 * @methodtype initialization
 	 */
-	protected void initialize(AccessRights r, EmailAddress ea, String n, String p, long vc) {
+	protected void initialize(AccessRights r, EmailAddress ea, String n, String p, long vc, PhotoManager photoManager) {
 		super.initialize(r, ea);
 		
 		id = getNextUserId();
@@ -164,6 +177,8 @@ public class User extends Client implements Persistent {
 		
 		homePage = getDefaultHomePage();
 
+		this.photoManager = photoManager;
+		
 		incWriteCount();
 	}
 	
@@ -219,8 +234,8 @@ public class User extends Client implements Persistent {
 		gender = Gender.getFromInt(rset.getInt("gender"));
 		status = UserStatus.getFromInt(rset.getInt("status"));
 		confirmationCode = rset.getLong("confirmation_code");
-		photos = PhotoManager.getInstance().findPhotosByOwner(name);
-		userPhoto = PhotoManager.getPhoto(PhotoId.getId(rset.getInt("photo")));
+		photos = photoManager.findPhotosByOwner(name);
+		userPhoto = photoManager.getPhotoFromId(PhotoId.getId(rset.getInt("photo")));
 		creationTime = rset.getLong("creation_time");
 	}
 	

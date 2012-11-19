@@ -37,6 +37,10 @@ import org.wahlzeit.services.SysLog;
  */
 public class AdminServlet extends AbstractServlet {
 
+	public AdminServlet(ServerMain serverMain) {
+		super(serverMain);
+	}
+
 	/**
 	 * 
 	 */
@@ -49,7 +53,7 @@ public class AdminServlet extends AbstractServlet {
 		String link = request.getRequestURI();
 		UserLog.logValue("requested", link);
 		if (isLocalHost(request)) {
-			Wahlzeit.requestStop();
+			super.serverMain.requestStop();
 			displayNullPage(request, response);
 		} else if (link.length() == "/admin".length()){
 			SysLog.logValue("redirect", PartUtil.DEFAULT_PAGE_NAME);

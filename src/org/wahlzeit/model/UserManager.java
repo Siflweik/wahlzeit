@@ -24,6 +24,7 @@ import java.util.*;
 import java.sql.*;
 
 import org.wahlzeit.services.*;
+import org.wahlzeit.services.mailing.EmailServer;
 
 
 /**
@@ -37,14 +38,14 @@ public class UserManager extends ObjectManager {
 	/**
 	 *
 	 */
-	protected static UserManager instance = new UserManager();
+	//protected static UserManager instance = new UserManager();
 
 	/**
 	 * 
 	 */
-	public static UserManager getInstance() {
+	/*public static UserManager getInstance() {
 		return instance;
-	}
+	}*/
 	
 	/**
 	 * Maps nameAsTag to user of that name (as tag)
@@ -56,6 +57,14 @@ public class UserManager extends ObjectManager {
 	 */
 	protected Random codeGenerator = new Random(System.currentTimeMillis());
 
+	protected EmailServer emailServer;
+	protected PhotoManager photoManager;
+	
+	public UserManager(EmailServer emailServer, PhotoManager photoManager)	{
+		this.emailServer = emailServer;
+		this.photoManager = photoManager;
+	}
+	
 	/**
 	 * 
 	 */
@@ -121,13 +130,13 @@ public class UserManager extends ObjectManager {
 
 		AccessRights rights = AccessRights.getFromInt(rset.getInt("rights"));
 		if (rights == AccessRights.USER) {
-			result = new User();
+			result = new User(photoManager);
 			result.readFrom(rset);
 		} else if (rights == AccessRights.MODERATOR) {
-			result = new Moderator();
+			result = new Moderator(photoManager);
 			result.readFrom(rset);
 		} else if (rights == AccessRights.ADMINISTRATOR) {
-			result = new Administrator();
+			result = new Administrator(photoManager);
 			result.readFrom(rset);
 		} else {
 			SysLog.logInfo("received NONE rights value");
@@ -211,8 +220,6 @@ public class UserManager extends ObjectManager {
 	 * 
 	 */
 	public void emailWelcomeMessage(UserSession ctx, User user) {
-		EmailServer emailServer = EmailServer.getInstance();
-
 		EmailAddress from = ctx.cfg().getAdministratorEmailAddress();
 		EmailAddress to = user.getEmailAddress();
 
@@ -224,15 +231,13 @@ public class UserManager extends ObjectManager {
 		emailBody += ctx.cfg().getGeneralEmailRegards() + "\n\n----\n";
 		emailBody += ctx.cfg().getGeneralEmailFooter() + "\n\n";
 
-		emailServer.sendEmail(from, to, ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
+		emailServer.sendEmailSilently(from, to, ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
 	}
 	
 	/**
 	 * 
 	 */
 	public void emailConfirmationRequest(UserSession ctx, User user) {
-		EmailServer emailServer = EmailServer.getInstance();
-
 		EmailAddress from = ctx.cfg().getAdministratorEmailAddress();
 		EmailAddress to = user.getEmailAddress();
 
@@ -242,7 +247,7 @@ public class UserManager extends ObjectManager {
 		emailBody += ctx.cfg().getGeneralEmailRegards() + "\n\n----\n";
 		emailBody += ctx.cfg().getGeneralEmailFooter() + "\n\n";
 
-		emailServer.sendEmail(from, to, ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
+		emailServer.sendEmailSilently(from, to, ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
 	}
 	
 	/**

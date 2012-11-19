@@ -43,6 +43,13 @@ public abstract class AbstractWebPartHandler implements WebPartHandler {
 	 * 
 	 */
 	protected AccessRights neededRights;
+	protected WebPartHandlerManager handlerManager;
+	protected PhotoManager photoManager;
+	
+	protected AbstractWebPartHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager)	{
+		this.handlerManager = handlerManager;
+		this.photoManager = photoManager;
+	}
 	
 	/**
 	 * 
@@ -108,7 +115,7 @@ public abstract class AbstractWebPartHandler implements WebPartHandler {
 	 * 
 	 */
 	protected final WebFormHandler getFormHandler(String name) {
-		return WebPartHandlerManager.getWebFormHandler(name);
+		return handlerManager.getWebFormHandlerFor(name);
 	}
 	
 	/**
@@ -145,7 +152,7 @@ public abstract class AbstractWebPartHandler implements WebPartHandler {
 	 */
 	protected boolean isSavedPhotoVisible(UserSession ctx) {
 		String id = ctx.getAsString(ctx.getSavedArgs(), Photo.ID);
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = photoManager.getPhoto(id);
 		return photo.isVisible();
 	}
 	

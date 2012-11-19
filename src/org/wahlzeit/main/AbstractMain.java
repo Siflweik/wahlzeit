@@ -32,39 +32,32 @@ public abstract class AbstractMain {
 	/**
 	 * 
 	 */
-	protected static AbstractMain instance;
-	
-	/**
-	 * 
-	 */
-	protected static boolean isToStopFlag = false;
+	protected boolean isToStopFlag = false;
 
 	/**
 	 * 
 	 */
-	protected static boolean isInProductionFlag = false;
+	protected boolean isInProductionFlag = false;
 	
 	/**
 	 * 
 	 */
-	public static void requestStop() {
-		synchronized(instance) {
-			isToStopFlag = true;
-			instance.notify();
-		}
+	public synchronized void requestStop() {
+		isToStopFlag = true;
+		notify();
 	}
 	
 	/**
 	 * 
 	 */
-	public static boolean isShuttingDown() {
+	public boolean isShuttingDown() {
 		return isToStopFlag;
 	}
 		
 	/**
 	 * 
 	 */
-	public static boolean isInProduction() {
+	public boolean isInProduction() {
 		return isInProductionFlag;
 	}
 	
@@ -95,9 +88,9 @@ public abstract class AbstractMain {
 		for (int i = 0; i < argv.length; i++) {
 			String arg = argv[i];
 			if (arg.equals("-P") || arg.equals("--production")) {
-				AbstractMain.isInProductionFlag = true;
+				isInProductionFlag = true;
 			} else if (arg.equals("-D") || arg.equals("--development")) {
-				AbstractMain.isInProductionFlag = false;
+				isInProductionFlag = false;
 			}
 		}		
 	}
@@ -150,6 +143,5 @@ public abstract class AbstractMain {
 	 */
 	protected void shutDown() throws Exception {
 		SysConfig.dropInstance();
-	}
-	
+	}	
 }

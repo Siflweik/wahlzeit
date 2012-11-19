@@ -34,11 +34,6 @@ import org.wahlzeit.services.*;
  * 
  */
 public class PhotoManager extends ObjectManager {
-	
-	/**
-	 * 
-	 */
-	protected static final PhotoManager instance = new PhotoManager();
 
 	/**
 	 * In-memory cache for photos
@@ -50,46 +45,36 @@ public class PhotoManager extends ObjectManager {
 	 */
 	protected PhotoTagCollector photoTagCollector = null;
 	
-	/**
-	 * 
-	 */
-	public static final PhotoManager getInstance() {
-		return instance;
-	}
+	protected ModelMain modelMain;
 	
 	/**
 	 * 
 	 */
-	public static final boolean hasPhoto(String id) {
+	public PhotoManager(ModelMain modelMain) {
+		photoTagCollector = PhotoFactory.getInstance().createPhotoTagCollector();
+		
+		this.modelMain = modelMain;
+	}
+
+	/**
+	 * 
+	 */
+	public final boolean hasPhoto(String id) {
 		return hasPhoto(PhotoId.getId(id));
 	}
 	
 	/**
 	 * 
 	 */
-	public static final boolean hasPhoto(PhotoId id) {
-		return getPhoto(id) != null;
+	public final boolean hasPhoto(PhotoId id) {
+		return getPhotoFromId(id) != null;
 	}
 	
 	/**
 	 * 
 	 */
-	public static final Photo getPhoto(String id) {
-		return getPhoto(PhotoId.getId(id));
-	}
-	
-	/**
-	 * 
-	 */
-	public static final Photo getPhoto(PhotoId id) {
-		return instance.getPhotoFromId(id);
-	}
-	
-	/**
-	 * 
-	 */
-	public PhotoManager() {
-		photoTagCollector = PhotoFactory.getInstance().createPhotoTagCollector();
+	public final Photo getPhoto(String id) {
+		return getPhotoFromId(PhotoId.getId(id));
 	}
 	
 	/**
@@ -149,7 +134,7 @@ public class PhotoManager extends ObjectManager {
 
 		try {
 			createObject(photo, getReadingStatement("INSERT INTO photos(id) VALUES(?)"), id.asInt());
-			Wahlzeit.saveGlobals();
+			saveGlobals();
 		} catch (SQLException sex) {
 			SysLog.logThrowable(sex);
 		}
@@ -354,4 +339,13 @@ public class PhotoManager extends ObjectManager {
 		}
 	}
 
+	protected void saveGlobals() throws SQLException	{
+		if (modelMain != null)	{
+			modelMain.saveGlobals();
+		}
+	}
+	
+	public void setModelMain(ModelMain modelMain)	{
+		this.modelMain = modelMain;
+	}
 }

@@ -34,11 +34,16 @@ import org.wahlzeit.webparts.*;
  */
 public class AdminUserProfileFormHandler extends AbstractWebFormHandler {
 	
+	protected UserManager userManager;
+	
 	/**
 	 *
 	 */
-	public AdminUserProfileFormHandler() {
+	public AdminUserProfileFormHandler(UserManager userManager, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.ADMIN_USER_PROFILE_FORM_FILE, AccessRights.ADMINISTRATOR);
+		
+		this.userManager = userManager;
 	}
 	
 	/**
@@ -48,7 +53,7 @@ public class AdminUserProfileFormHandler extends AbstractWebFormHandler {
 		Map<String, Object> args = ctx.getSavedArgs();
 
 		String userId = ctx.getAndSaveAsString(args, "userId");
-		User user = UserManager.getInstance().getUserByName(userId);
+		User user = userManager.getUserByName(userId);
 	
 		Photo photo = user.getUserPhoto();
 		part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));
@@ -71,9 +76,8 @@ public class AdminUserProfileFormHandler extends AbstractWebFormHandler {
 	 * 
 	 */
 	protected String doHandlePost(UserSession ctx, Map args) {
-		UserManager um = UserManager.getInstance();
 		String userId = ctx.getAndSaveAsString(args, "userId");
-		User user = um.getUserByName(userId);
+		User user = userManager.getUserByName(userId);
 		
 		String status = ctx.getAndSaveAsString(args, User.STATUS);
 		String rights = ctx.getAndSaveAsString(args, User.RIGHTS);
@@ -99,8 +103,8 @@ public class AdminUserProfileFormHandler extends AbstractWebFormHandler {
 		user.setHomePage(StringUtil.asUrl(homePage));
 		user.setNotifyAboutPraise((notifyAboutPraise != null) && notifyAboutPraise.equals("on"));
 
-		um.dropUser(user);
-		user = um.getUserByName(userId);
+		userManager.dropUser(user);
+		user = userManager.getUserByName(userId);
 		ctx.setSavedArg("userId", userId);
 
 		StringBuffer sb = UserLog.createActionEntry("AdminUserProfile");

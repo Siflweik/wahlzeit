@@ -23,12 +23,13 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.AccessRights;
+import org.wahlzeit.model.PhotoManager;
 import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserManager;
 import org.wahlzeit.model.UserSession;
 import org.wahlzeit.services.EmailAddress;
-import org.wahlzeit.services.EmailServer;
+import org.wahlzeit.services.mailing.EmailServer;
 import org.wahlzeit.utils.StringUtil;
 import org.wahlzeit.webparts.WebPart;
 
@@ -40,12 +41,17 @@ import org.wahlzeit.webparts.WebPart;
  *
  */
 public class EmailUserNameFormHandler extends AbstractWebFormHandler {
-	
+	protected EmailServer emailServer;
+	protected UserManager userManager;
 	/**
 	 *
 	 */
-	public EmailUserNameFormHandler() {
+	public EmailUserNameFormHandler(EmailServer emailServer, UserManager userManager, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.EMAIL_USER_NAME_FORM_FILE, AccessRights.GUEST);
+		
+		this.emailServer = emailServer;
+		this.userManager = userManager;
 	}
 
 	/**
@@ -70,17 +76,16 @@ public class EmailUserNameFormHandler extends AbstractWebFormHandler {
 			return PartUtil.EMAIL_PASSWORD_PAGE_NAME;
 		}
 
-		UserManager userManager = UserManager.getInstance();	
 		User user = userManager.getUserByEmailAddress(emailAddress);
+		
 		if (user == null) {
 			ctx.setMessage(ctx.cfg().getUnknownEmailAddress());
 			return PartUtil.EMAIL_PASSWORD_PAGE_NAME;
 		}
 
-		EmailServer emailServer = EmailServer.getInstance();
 		EmailAddress from = ctx.cfg().getModeratorEmailAddress();
 		EmailAddress to = user.getEmailAddress();
-		emailServer.sendEmail(from, to, ctx.cfg().getAuditEmailAddress(), ctx.cfg().getSendUserNameEmailSubject(), user.getName());
+		emailServer.sendEmailSilently(from, to, ctx.cfg().getAuditEmailAddress(), ctx.cfg().getSendUserNameEmailSubject(), user.getName());
 
 		UserLog.logPerformedAction("EmailUserName");
 

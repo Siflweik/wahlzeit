@@ -32,6 +32,10 @@ import javax.servlet.http.*;
  */
 public class NullServlet extends AbstractServlet {
 
+	public NullServlet() {
+		super(null);
+	}
+
 	/**
 	 * 
 	 */

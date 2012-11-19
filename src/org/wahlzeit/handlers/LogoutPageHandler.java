@@ -24,6 +24,7 @@ import java.util.*;
 
 import org.wahlzeit.model.AccessRights;
 import org.wahlzeit.model.Guest;
+import org.wahlzeit.model.PhotoManager;
 import org.wahlzeit.model.UserSession;
 import org.wahlzeit.services.EmailAddress;
 import org.wahlzeit.utils.HtmlUtil;
@@ -41,7 +42,8 @@ public class LogoutPageHandler extends AbstractWebPageHandler {
 	/**
 	 *
 	 */
-	public LogoutPageHandler() {
+	public LogoutPageHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SHOW_NOTE_PAGE_FILE, AccessRights.USER);
 	}
 	

@@ -28,8 +28,8 @@ import org.wahlzeit.model.PhotoManager;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserSession;
 import org.wahlzeit.services.EmailAddress;
-import org.wahlzeit.services.EmailServer;
 import org.wahlzeit.services.SysConfig;
+import org.wahlzeit.services.mailing.EmailServer;
 import org.wahlzeit.utils.StringUtil;
 import org.wahlzeit.webparts.WebPart;
 
@@ -42,6 +42,8 @@ import org.wahlzeit.webparts.WebPart;
  */
 public class TellFriendFormHandler extends AbstractWebFormHandler {
 	
+	protected EmailServer emailServer;
+	
 	/**
 	 * 
 	 */
@@ -53,8 +55,11 @@ public class TellFriendFormHandler extends AbstractWebFormHandler {
 	/**
 	 *
 	 */
-	public TellFriendFormHandler() {
+	public TellFriendFormHandler(EmailServer emailServer, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.TELL_FRIEND_FORM_FILE, AccessRights.GUEST);
+		
+		this.emailServer = emailServer;
 	}
 
 	/**
@@ -71,12 +76,12 @@ public class TellFriendFormHandler extends AbstractWebFormHandler {
 		String emailText = ctx.cfg().getTellFriendEmailWebsite() + "\n\n" + SysConfig.getSiteUrlAsString() + "\n\n";
 
 		String id = ctx.getAsString(args, Photo.ID);
-		if (!StringUtil.isNullOrEmptyString(id) && PhotoManager.hasPhoto(id)) {
+		if (!StringUtil.isNullOrEmptyString(id) && super.photoManager.hasPhoto(id)) {
 			emailText += (ctx.cfg().getTellFriendEmailPhoto() + "\n\n" + SysConfig.getSiteUrlAsString() + id + ".html" + "\n\n");
 		}
 		
 		part.addString(Photo.ID, id);
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = super.photoManager.getPhoto(id);
 		part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));
 
 		part.maskAndAddStringFromArgsWithDefault(args, EMAIL_BODY, emailText);
@@ -111,8 +116,7 @@ public class TellFriendFormHandler extends AbstractWebFormHandler {
 		EmailAddress from = EmailAddress.getFromString(yourEmailAddress);
 		EmailAddress to = EmailAddress.getFromString(friendsEmailAddress);
 
-		EmailServer emailServer = EmailServer.getInstance();
-		emailServer.sendEmail(from, to, ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
+		emailServer.sendEmailSilently(from, to, ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
 
 		ctx.setEmailAddress(from);
 

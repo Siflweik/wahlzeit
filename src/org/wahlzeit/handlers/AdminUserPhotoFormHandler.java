@@ -35,7 +35,8 @@ public class AdminUserPhotoFormHandler extends AbstractWebFormHandler {
 	/**
 	 *
 	 */
-	public AdminUserPhotoFormHandler() {
+	public AdminUserPhotoFormHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.ADMIN_USER_PHOTO_FORM_FILE, AccessRights.ADMINISTRATOR);
 	}
 	
@@ -47,7 +48,7 @@ public class AdminUserPhotoFormHandler extends AbstractWebFormHandler {
 
 		String photoId = ctx.getAndSaveAsString(args, "photoId");
 
-		Photo photo = PhotoManager.getPhoto(photoId);
+		Photo photo = super.photoManager.getPhoto(photoId);
 		part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));
 
 		part.addString("photoId", photoId);
@@ -61,15 +62,14 @@ public class AdminUserPhotoFormHandler extends AbstractWebFormHandler {
 	 */
 	protected String doHandlePost(UserSession ctx, Map args) {
 		String id = ctx.getAndSaveAsString(args, "photoId");
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = super.photoManager.getPhoto(id);
 	
 		String tags = ctx.getAndSaveAsString(args, Photo.TAGS);
 		photo.setTags(new Tags(tags));
 		String status = ctx.getAndSaveAsString(args, Photo.STATUS);
 		photo.setStatus(PhotoStatus.getFromString(status));
 
-		PhotoManager pm = PhotoManager.getInstance();
-		pm.savePhoto(photo);
+		super.photoManager.savePhoto(photo);
 		
 		StringBuffer sb = UserLog.createActionEntry("AdminUserPhoto");
 		UserLog.addUpdatedObject(sb, "Photo", photo.getId().asString());

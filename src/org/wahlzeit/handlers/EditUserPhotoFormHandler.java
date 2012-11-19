@@ -36,7 +36,8 @@ public class EditUserPhotoFormHandler extends AbstractWebFormHandler {
 	/**
 	 *
 	 */
-	public EditUserPhotoFormHandler() {
+	public EditUserPhotoFormHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.EDIT_USER_PHOTO_FORM_FILE, AccessRights.USER);
 	}
 	
@@ -55,7 +56,7 @@ public class EditUserPhotoFormHandler extends AbstractWebFormHandler {
 		part.addStringFromArgs(args, UserSession.MESSAGE);
 
 		String id = ctx.getAsString(args, Photo.ID);
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = super.photoManager.getPhoto(id);
 
 		part.addString(Photo.ID, id);
 		part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));
@@ -73,7 +74,7 @@ public class EditUserPhotoFormHandler extends AbstractWebFormHandler {
 	 */
 	protected boolean isWellFormedPost(UserSession ctx, Map args) {
 		String id = ctx.getAsString(args, Photo.ID);
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = super.photoManager.getPhoto(id);
 		return (photo != null) && ctx.isPhotoOwner(photo);
 	}
 	
@@ -82,8 +83,8 @@ public class EditUserPhotoFormHandler extends AbstractWebFormHandler {
 	 */
 	protected String doHandlePost(UserSession ctx, Map args) {
 		String id = ctx.getAndSaveAsString(args, Photo.ID);
-		PhotoManager pm = PhotoManager.getInstance();
-		Photo photo = PhotoManager.getPhoto(id);
+
+		Photo photo = super.photoManager.getPhoto(id);
 
 		String tags = ctx.getAndSaveAsString(args, Photo.TAGS);
 		photo.setTags(new Tags(tags));
@@ -93,7 +94,7 @@ public class EditUserPhotoFormHandler extends AbstractWebFormHandler {
 		PhotoStatus ps = photo.getStatus().asInvisible(isInvisible);
 		photo.setStatus(ps);
 
-		pm.savePhoto(photo);
+		super.photoManager.savePhoto(photo);
 		
 		StringBuffer sb = UserLog.createActionEntry("EditUserPhoto");
 		UserLog.addUpdatedObject(sb, "Photo", photo.getId().asString());

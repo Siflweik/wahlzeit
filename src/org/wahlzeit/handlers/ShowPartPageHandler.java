@@ -23,6 +23,7 @@ package org.wahlzeit.handlers;
 import java.util.Map;
 
 import org.wahlzeit.model.AccessRights;
+import org.wahlzeit.model.PhotoManager;
 import org.wahlzeit.model.UserSession;
 import org.wahlzeit.webparts.Writable;
 import org.wahlzeit.webparts.WebPart;
@@ -44,7 +45,8 @@ public class ShowPartPageHandler extends AbstractWebPageHandler {
 	/**
 	 * 
 	 */
-	public ShowPartPageHandler(AccessRights myRights, WebPartHandler myPartHandler) {
+	public ShowPartPageHandler(AccessRights myRights, WebPartHandler myPartHandler, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(myRights, myPartHandler);
 	}
 

@@ -34,11 +34,16 @@ import org.wahlzeit.webparts.*;
  */
 public class ShowUserPhotoFormHandler extends AbstractWebFormHandler {
 	
+	protected UserManager userManager;
+	
 	/**
 	 *
 	 */
-	public ShowUserPhotoFormHandler() {
+	public ShowUserPhotoFormHandler(UserManager userManager, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SHOW_USER_PHOTO_FORM_FILE, AccessRights.USER);
+		
+		this.userManager = userManager;
 	}
 	
 	/**
@@ -68,7 +73,7 @@ public class ShowUserPhotoFormHandler extends AbstractWebFormHandler {
 	 */
 	protected boolean isWellFormedPost(UserSession ctx, Map args) {
 		String id = ctx.getAsString(args, Photo.ID);
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = super.photoManager.getPhoto(id);
 		return (photo != null) && ctx.isPhotoOwner(photo);
 	}
 	
@@ -79,9 +84,8 @@ public class ShowUserPhotoFormHandler extends AbstractWebFormHandler {
 		String result = PartUtil.SHOW_USER_HOME_PAGE_NAME;
 		
 		String id = ctx.getAndSaveAsString(args, Photo.ID);
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = super.photoManager.getPhoto(id);
 
-		UserManager userManager = UserManager.getInstance();
 		User user = userManager.getUserByName(photo.getOwnerName());
 		if (ctx.isFormType(args, "edit")) {
 			ctx.setPhoto(photo);

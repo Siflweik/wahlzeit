@@ -34,6 +34,10 @@ import org.wahlzeit.webparts.*;
  */
 public abstract class AbstractWebFormHandler extends AbstractWebPartHandler implements WebFormHandler {
 
+	protected AbstractWebFormHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
+	}
+
 	/**
 	 * 
 	 */

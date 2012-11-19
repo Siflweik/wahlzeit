@@ -39,7 +39,8 @@ public class FilterPhotosPageHandler extends AbstractWebPageHandler {
 	/**
 	 *
 	 */
-	public FilterPhotosPageHandler() {
+	public FilterPhotosPageHandler(WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+		super(handlerManager, photoManager);
 		initialize(PartUtil.SHOW_NOTE_PAGE_FILE, AccessRights.GUEST);
 	}
 	
