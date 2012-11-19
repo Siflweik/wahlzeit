@@ -45,7 +45,10 @@ public class MockEmailServer extends AbstractEmailServer {
 	protected String emailSubject;
 	protected String emailBody;
 
-	public MockEmailServer(EmailAddress from, EmailAddress to, EmailAddress bcc, String subject, String body) {
+	public MockEmailServer() {
+	}
+	
+	public void registerExpectedEmail(EmailAddress from, EmailAddress to, EmailAddress bcc, String subject, String body)	{
 		fromEA = from;
 		toEA = to;
 		bccEA = bcc;

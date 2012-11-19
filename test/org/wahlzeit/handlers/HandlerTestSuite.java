@@ -20,10 +20,11 @@
 
 package org.wahlzeit.handlers;
 
+import java.lang.reflect.Method;
 import java.util.Enumeration;
 
+import org.wahlzeit.main.Wahlzeit;
 import org.wahlzeit.model.UserSession;
-
 import junit.framework.*;
 
 public class HandlerTestSuite extends TestSuite implements HandlerTest {
@@ -49,18 +50,34 @@ public class HandlerTestSuite extends TestSuite implements HandlerTest {
 		addTest(new HandlerTestSuite(testClass));
 	}
 
-	/**
-	 * 
-	 */
+	@Override
 	public void setUserSession(UserSession mySession) {
+		invokeForEachTest("setUserSession", mySession);
+	}
+	
+	@Override
+	public void setWahlzeit(Wahlzeit wahlzeit) {
+		invokeForEachTest("setWahlzeit", wahlzeit);		
+	}
+	
+	protected void invokeForEachTest(String method, Object param)	{
 		Enumeration myTests = tests();
+		
 		while(myTests.hasMoreElements()) {
 			Test next = (Test) myTests.nextElement();
 			if (next instanceof HandlerTest) {
 				HandlerTest test = (HandlerTest) next;
-				test.setUserSession(mySession);				
+				
+				invokeMethod(method, test, param);
 			}
-		}			
+		}
 	}
-
+		
+	protected void invokeMethod(String method, Object target, Object param)	{
+		try {
+			Method m = target.getClass().getMethod(method, param.getClass());
+			m.invoke(target, param);
+		} catch (Exception e) {
+		}
+	}
 }

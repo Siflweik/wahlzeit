@@ -20,13 +20,13 @@
 package org.wahlzeit.handlers;
 
 import junit.framework.*;
+
+import org.wahlzeit.main.Wahlzeit;
 import org.wahlzeit.model.*;
 
 public interface HandlerTest extends Test {
 
-	/**
-	 * 
-	 */
 	public void setUserSession(UserSession mySession);
-
+	
+	public void setWahlzeit(Wahlzeit wahlzeit);
 }

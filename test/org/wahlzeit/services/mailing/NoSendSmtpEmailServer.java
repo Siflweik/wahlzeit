@@ -4,6 +4,8 @@ import java.util.Stack;
 
 import javax.mail.Message;
 
+import junit.framework.Assert;
+
 public class NoSendSmtpEmailServer extends SmtpEmailServer {
 
 	protected Stack<Message> messages;
@@ -18,12 +20,12 @@ public class NoSendSmtpEmailServer extends SmtpEmailServer {
 	}
 	
 	public synchronized Message getLastMessage()	{
-		Message msg = null;
-		
-		if (!messages.isEmpty())	{
-			msg = messages.pop();
-		}
-		
-		return msg;
+		Assert.assertFalse("There is no email :(", messages.isEmpty());
+
+		return messages.pop();
+	}
+	
+	public synchronized int getMessageCount()	{
+		return messages.size();
 	}
 }

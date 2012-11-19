@@ -20,8 +20,6 @@
 
 package org.wahlzeit.handlers;
 
-import java.util.*;
-
 import org.wahlzeit.main.*;
 import org.wahlzeit.model.*;
 import org.wahlzeit.services.*;
@@ -34,13 +32,16 @@ public class HandlerTestSetup extends TestSetup {
 	/**
 	 * 
 	 */
-	public UserSession session;	
-	
+	private UserSession session;	
+	private Wahlzeit wahlzeit;
+
 	/**
 	 * 
 	 */	
-	public HandlerTestSetup(Test test) {
+	public HandlerTestSetup(Wahlzeit wahlzeit, Test test) {
 		super(test);
+		
+		this.wahlzeit = wahlzeit;
 	}
 	
 	/**
@@ -55,6 +56,7 @@ public class HandlerTestSetup extends TestSetup {
 		if (fTest instanceof HandlerTest) {
 			HandlerTest test = (HandlerTest) fTest;
 			test.setUserSession(session);
+			test.setWahlzeit(wahlzeit);
 		}
 	}
 	
@@ -64,15 +66,14 @@ public class HandlerTestSetup extends TestSetup {
 	protected UserSession createUserSession() {
 		UserSession result = null;
 		
-		ModelMain.configureWebPartTemplateServer();
+		wahlzeit.configureWebPartTemplateServer();
 		
-		Wahlzeit.configurePartHandlers();
-		Wahlzeit.configureLanguageModels();
+		wahlzeit.configurePartHandlers();
+		wahlzeit.configureLanguageModels();
 
 		result = new UserSession("testContext");
 		result.setConfiguration(LanguageConfigs.get(Language.ENGLISH));
 
 		return result;
-	}
-	
+	}	
 }

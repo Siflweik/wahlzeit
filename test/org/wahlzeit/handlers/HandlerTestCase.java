@@ -20,7 +20,9 @@
 
 package org.wahlzeit.handlers;
 
+import org.wahlzeit.main.Wahlzeit;
 import org.wahlzeit.model.*;
+import org.wahlzeit.services.mailing.EmailServer;
 
 import junit.framework.*;
 
@@ -29,9 +31,9 @@ public class HandlerTestCase extends TestCase implements HandlerTest {
 	/**
 	 * 
 	 */
-	protected UserSession session;
-	protected WebFormHandler handler;
-	
+	private UserSession session;
+	private Wahlzeit wahlzeit;
+		
 	/**
 	 * 
 	 */
@@ -39,11 +41,29 @@ public class HandlerTestCase extends TestCase implements HandlerTest {
 		super(name);
 	}
 	
-	/**
-	 * 
-	 */
+	@Override
 	public void setUserSession(UserSession mySession) {
 		session = mySession;
 	}
 
+	protected UserSession getUserSession()	{
+		return session;
+	}
+	
+	@Override
+	public void setWahlzeit(Wahlzeit wahlzeit) {
+		this.wahlzeit = wahlzeit;
+	}
+		
+	protected Wahlzeit getWahlzeit()	{
+		return wahlzeit;
+	}
+	
+	protected EmailServer getEmailServer()	{
+		return wahlzeit.getEmailServer();
+	}
+	
+	protected WebPartHandlerManager getWebPartHandlerManager()	{
+		return wahlzeit.getWebPartHandlerManager();
+	}
 }

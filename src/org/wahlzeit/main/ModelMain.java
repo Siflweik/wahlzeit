@@ -153,5 +153,13 @@ public abstract class ModelMain extends AbstractMain {
 	public void configureWebPartTemplateServer() {
 		ConfigDir templatesDir = SysConfig.getTemplatesDir();
 		WebPartTemplateServer.getInstance().setTemplatesDir(templatesDir);
-	}	
+	}
+	
+	public UserManager getUserManager()	{
+		return userManager;
+	}
+	
+	public PhotoManager getPhotoManager()	{
+		return photoManager;
+	}
 }

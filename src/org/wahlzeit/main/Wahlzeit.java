@@ -37,7 +37,7 @@ import org.wahlzeit.services.mailing.SmtpEmailServer;
  */
 public class Wahlzeit extends ServerMain {
 
-	protected Wahlzeit(UserManager userManager, AgentManager agentManager, EmailServer emailServer, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
+	public Wahlzeit(UserManager userManager, AgentManager agentManager, EmailServer emailServer, WebPartHandlerManager handlerManager, PhotoManager photoManager) {
 		super(userManager, agentManager, emailServer, handlerManager, photoManager);
 	}
 

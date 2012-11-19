@@ -4,7 +4,6 @@ import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
 
 import org.wahlzeit.services.EmailAddress;
-import org.wahlzeit.services.SysLog;
 
 public abstract class AbstractEmailServer implements EmailServer {
 
@@ -18,6 +17,10 @@ public abstract class AbstractEmailServer implements EmailServer {
 		assertAddressHasValidSyntax(from, "sender");
 		assertAddressHasValidSyntax(to, "receiver");
 
+		if (!bcc.equals(EmailAddress.NONE))	{
+			assertAddressHasValidSyntax(bcc, "bcc");
+		}
+		
 		assertIsValidString(subject, "subject");
 		assertIsValidString(body, "body");
 
@@ -44,7 +47,6 @@ public abstract class AbstractEmailServer implements EmailServer {
 			sendEmail(from, to, bcc, subject, body);
 		} catch (MailingException e) {
 			success = false;
-			SysLog.logThrowable(e);
 		}
 		
 		return success;

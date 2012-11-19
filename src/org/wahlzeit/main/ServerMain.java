@@ -328,4 +328,16 @@ public abstract class ServerMain extends ModelMain {
 		LanguageConfigs.put(Language.ENGLISH, new EnglishModelConfig());
 		LanguageConfigs.put(Language.GERMAN, new GermanModelConfig());
 	}		
+	
+	public AgentManager getAgentManager()	{
+		return agentManager;
+	}
+	
+	public EmailServer getEmailServer()	{
+		return emailServer;
+	}
+	
+	public WebPartHandlerManager getWebPartHandlerManager()	{
+		return handlerManager;
+	}
 }
