@@ -39,7 +39,7 @@ import org.wahlzeit.webparts.*;
  */
 public abstract class AbstractServlet extends HttpServlet {
 	
-	protected ServerMain serverMain;
+	private static ServerMain serverMain;
 	
 	/**
 	 * 
@@ -67,10 +67,6 @@ public abstract class AbstractServlet extends HttpServlet {
 	public static synchronized int getNextSessionId() {
 		return ++lastSessionId;
 	}
-		
-	public AbstractServlet(ServerMain serverMain)	{
-		this.serverMain = serverMain;
-	}
 	
 	/**
 	 * 
@@ -79,7 +75,9 @@ public abstract class AbstractServlet extends HttpServlet {
 		UserSession ctx = ensureWebContext(request);	
 		ContextManager.setThreadLocalContext(ctx);
 		
-		if (serverMain.isShuttingDown() || (ctx == null)) {
+		if (serverMain == null)	{
+			SysLog.logError("Servlet misses a reference to ServerMain");
+		} else if (serverMain.isShuttingDown() || (ctx == null)) {
 			displayNullPage(request, response);
 		} else {
 			myGet(request, response);
@@ -103,7 +101,9 @@ public abstract class AbstractServlet extends HttpServlet {
 		UserSession ctx = ensureWebContext(request);	
 		ContextManager.setThreadLocalContext(ctx);
 		
-		if (serverMain.isShuttingDown() || (ctx == null)) {
+		if (serverMain == null)	{
+			SysLog.logError("Servlet misses a reference to ServerMain");
+		} else if (serverMain.isShuttingDown() || (ctx == null)) {
 			displayNullPage(request, response);
 		} else {
 			myPost(request, response);
@@ -219,4 +219,11 @@ public abstract class AbstractServlet extends HttpServlet {
 		return "[" + result.toString() + "]";
 	}
 
+	public static void setServerMain(ServerMain serverMain) {
+		AbstractServlet.serverMain = serverMain;
+	}
+	
+	protected static ServerMain getServerMain() {
+		return serverMain;
+	}
 }

@@ -51,14 +51,8 @@ public class MainServlet extends AbstractServlet {
 	 */
 	private static final long serialVersionUID = 42L; // any one does; class never serialized
 
-	protected WebPartHandlerManager handlerManager;
-	
-	public MainServlet(WebPartHandlerManager handlerManager, ServerMain serverMain)	{
-		super(serverMain);
-		
-		this.handlerManager = handlerManager;
-	}
-	
+	protected static WebPartHandlerManager handlerManager;
+
 	/**
 	 * 
 	 */
@@ -172,4 +166,7 @@ public class MainServlet extends AbstractServlet {
 		return result;
 	}
 
+	public static void setWebPartHandlerManager(WebPartHandlerManager manager)	{
+		handlerManager = manager;
+	}
 }

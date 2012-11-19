@@ -162,12 +162,18 @@ public abstract class ServerMain extends ModelMain {
 		
 		// Dynamic content
 		
+		//TODO: migrate to jetty 6 so that we can use 'ServletHolder holder = new ServletHolder(new MainServlet(...));' instead of these static dependencies
+		//	Sub-classing ServletHolder did not work -.-
+		MainServlet.setWebPartHandlerManager(handlerManager);
+		MainServlet.setServerMain(this);
+		
 		HttpContext servletContext = new HttpContext();
 		servletContext.setContextPath("/");
 		server.addContext(servletContext);
-		
+				
 		ServletHandler servlets = new ServletHandler();
 		servletContext.addHandler(servlets);
+				
 		servlets.addServlet("/*","org.wahlzeit.main.MainServlet");
 
 		servletContext.addHandler(new NotFoundHandler());
@@ -318,7 +324,7 @@ public abstract class ServerMain extends ModelMain {
 	/**
 	 * 
 	 */
-	public static void configureLanguageModels() {
+	public void configureLanguageModels() {
 		LanguageConfigs.put(Language.ENGLISH, new EnglishModelConfig());
 		LanguageConfigs.put(Language.GERMAN, new GermanModelConfig());
 	}		
