@@ -20,10 +20,6 @@
 
 package org.wahlzeit.handlers;
 
-import org.wahlzeit.main.Wahlzeit;
-import org.wahlzeit.model.PhotoManager;
-import org.wahlzeit.services.mailing.EmailServer;
-
 import junit.framework.*;
 
 /**
@@ -32,17 +28,6 @@ import junit.framework.*;
  * 
  */
 public class AllTests extends TestSuite {
-
-	public static Wahlzeit wahlzeit = null;
-	
-	static {
-		EmailServer emailServer = new MockEmailServer();
-		WebPartHandlerManager handlerManager = new WebPartHandlerManager();
-		
-		PhotoManager photoManager = new PhotoManager(null);
-		
-		wahlzeit = new Wahlzeit(null, null, emailServer, handlerManager, photoManager);
-	}
 	
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(suite());
@@ -51,10 +36,6 @@ public class AllTests extends TestSuite {
 	public static Test suite() {
 		TestSuite suite = new HandlerTestSuite();
 		suite.addTestSuite(TellFriendTest.class);
-		return new HandlerTestSetup(wahlzeit, suite);
-	}
-
-	public static Wahlzeit getWahlzeit()	{
-		return wahlzeit;
+		return new HandlerTestSetup(new ConfiguredWahlzeit(), suite);
 	}
 }

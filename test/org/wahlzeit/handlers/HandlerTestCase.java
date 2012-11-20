@@ -56,14 +56,16 @@ public class HandlerTestCase extends TestCase implements HandlerTest {
 	}
 		
 	protected Wahlzeit getWahlzeit()	{
+		assertNotNull(wahlzeit);
+		
 		return wahlzeit;
 	}
 	
 	protected EmailServer getEmailServer()	{
-		return wahlzeit.getEmailServer();
+		return getWahlzeit().getEmailServer();
 	}
 	
 	protected WebPartHandlerManager getWebPartHandlerManager()	{
-		return wahlzeit.getWebPartHandlerManager();
+		return getWahlzeit().getWebPartHandlerManager();
 	}
 }

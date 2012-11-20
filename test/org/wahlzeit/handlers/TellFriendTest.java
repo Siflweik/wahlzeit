@@ -43,7 +43,7 @@ public class TellFriendTest extends HandlerTestCase {
 	 * 
 	 */
 	public static void main(String[] args) {
-		Test test = new HandlerTestSetup(AllTests.getWahlzeit(), new HandlerTestSuite(TellFriendTest.class));
+		Test test = new HandlerTestSetup(new ConfiguredWahlzeit(), new HandlerTestSuite(TellFriendTest.class));
 		junit.textui.TestRunner.run(test);
 	}
 

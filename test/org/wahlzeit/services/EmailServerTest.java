@@ -1,6 +1,5 @@
 package org.wahlzeit.services;
 
-import org.wahlzeit.services.mailing.MailingException;
 import org.wahlzeit.services.mailing.NoSendSmtpEmailServer;
 
 import junit.framework.TestCase;

@@ -73,11 +73,28 @@ public class HandlerTestSuite extends TestSuite implements HandlerTest {
 		}
 	}
 		
-	protected void invokeMethod(String method, Object target, Object param)	{
+	/*
+	 * Invoke target.methodName(param) via reflection
+	 */
+	protected void invokeMethod(String methodName, Object target, Object param)	{
 		try {
-			Method m = target.getClass().getMethod(method, param.getClass());
-			m.invoke(target, param);
+			Class<?> paramClass = param.getClass();
+			Method[] methods = target.getClass().getMethods();
+			
+			// Find a method which (a) has the requested name and (b) accepts the given parameter.
+			// We cannot use Class.getMethod(String, Class<?>...) since the actual parameter might be the instance of a subclass of the required parameter's class
+			for (Method meth : methods) {
+				if (meth.getName().equals(methodName))	{
+					Class<?>[] params = meth.getParameterTypes();
+
+					if (params.length == 1 && params[0].isAssignableFrom(paramClass))	{
+						meth.invoke(target, param);
+						break;
+					}
+				}
+			}
 		} catch (Exception e) {
+			System.out.println("[EX] " + e.getMessage());
 		}
 	}
 }
