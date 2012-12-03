@@ -37,29 +37,72 @@ public abstract class ObjectManager {
 	 * 
 	 */
 	public DatabaseConnection getDatabaseConnection() throws SQLException {
-		return ContextManager.getDatabaseConnection();
+		DatabaseConnection conn = ContextManager.getDatabaseConnection();
+		
+		assertIsValidConnection(conn);
+		
+		return conn;
 	}
 	    
+	protected void assertIsValidConnection(DatabaseConnection conn)	{
+		assertIsNotNull(conn);
+	}
+	
+	protected void assertIsValidString(String str)	{
+		assert (str != null && !str.trim().equals(""));
+	}
+	
+	protected void assertIsValidPreparedStatement(PreparedStatement stmt)	{
+		assertIsNotNull(stmt);
+	}
+	
+	protected void assertIsValidPersistent(Persistent result)	{
+		assertIsNotNull(result);
+	}
+	
+	protected void assertIsValidID(int value)	{
+		assert (value > -1);
+	}
+	
+	protected static void assertIsNotNull(Object instance)	{
+		assert (instance != null);
+	}
+	
 	/**
 	 * 
 	 */
 	protected PreparedStatement getReadingStatement(String stmt) throws SQLException {
+		assertIsValidString(stmt);
+		
     	DatabaseConnection dbc = getDatabaseConnection();
-    	return dbc.getReadingStatement(stmt);
+    	PreparedStatement prep = dbc.getReadingStatement(stmt);
+    	
+    	assertIsValidPreparedStatement(prep);
+    	
+    	return prep;
 	}
 	
 	/**
 	 * 
 	 */
 	protected PreparedStatement getUpdatingStatement(String stmt) throws SQLException {
+		assertIsValidString(stmt);
+		
     	DatabaseConnection dbc = getDatabaseConnection();
-    	return dbc.getUpdatingStatement(stmt);
+    	PreparedStatement prep = dbc.getUpdatingStatement(stmt);
+    	
+    	assertIsValidPreparedStatement(prep);
+    	
+    	return prep;
 	}
 	
 	/**
 	 * 
 	 */
 	protected Persistent readObject(PreparedStatement stmt, int value) throws SQLException {
+		assertIsValidPreparedStatement(stmt);
+		assertIsValidID(value);
+		
 		Persistent result = null;
 		stmt.setInt(1, value);
 		SysLog.logQuery(stmt);
@@ -67,6 +110,8 @@ public abstract class ObjectManager {
 		if (rset.next()) {
 			result = createObject(rset);
 		}
+		
+		assertIsValidPersistent(result);
 
 		return result;
 	}
@@ -75,6 +120,9 @@ public abstract class ObjectManager {
 	 * 
 	 */
 	protected Persistent readObject(PreparedStatement stmt, String value) throws SQLException {
+		assertIsValidPreparedStatement(stmt);
+		assertIsValidString(value);
+		
 		Persistent result = null;
 		stmt.setString(1, value);
 		SysLog.logQuery(stmt);
@@ -83,6 +131,8 @@ public abstract class ObjectManager {
 			result = createObject(rset);
 		}
 
+		assertIsValidPersistent(result);
+		
 		return result;
 	}
 	
@@ -90,6 +140,9 @@ public abstract class ObjectManager {
 	 * 
 	 */
 	protected void readObjects(Collection result, PreparedStatement stmt) throws SQLException {
+		assertIsNotNull(result);
+		assertIsValidPreparedStatement(stmt);
+		
 		SysLog.logQuery(stmt);
 		ResultSet rset = stmt.executeQuery();
 		while (rset.next()) {
@@ -102,6 +155,10 @@ public abstract class ObjectManager {
 	 * 
 	 */
 	protected void readObjects(Collection result, PreparedStatement stmt, String value) throws SQLException {
+		assertIsNotNull(result);
+		assertIsValidPreparedStatement(stmt);
+		assertIsValidString(value);
+		
 		stmt.setString(1, value);
 		SysLog.logQuery(stmt);
 		ResultSet rset = stmt.executeQuery();
@@ -120,6 +177,10 @@ public abstract class ObjectManager {
 	 * 
 	 */
 	protected void createObject(Persistent obj, PreparedStatement stmt, int value) throws SQLException {
+		assertIsValidPersistent(obj);
+		assertIsValidPreparedStatement(stmt);
+		assertIsValidID(value);
+		
 		stmt.setInt(1, value);
 		SysLog.logQuery(stmt);
 		stmt.executeUpdate();
@@ -129,6 +190,10 @@ public abstract class ObjectManager {
 	 * 
 	 */
 	protected void createObject(Persistent obj, PreparedStatement stmt, String value) throws SQLException {
+		assertIsValidPersistent(obj);
+		assertIsValidPreparedStatement(stmt);
+		assertIsValidString(value);
+		
 		stmt.setString(1, value);
 		SysLog.logQuery(stmt);
 		stmt.executeUpdate();
@@ -138,6 +203,9 @@ public abstract class ObjectManager {
 	 * 
 	 */
 	protected void updateObject(Persistent obj, PreparedStatement stmt) throws SQLException {
+		assertIsValidPersistent(obj);
+		assertIsValidPreparedStatement(stmt);
+		
 		if (obj.isDirty()) {
 			obj.writeId(stmt, 1);
 			SysLog.logQuery(stmt);
@@ -157,6 +225,9 @@ public abstract class ObjectManager {
 	 * 
 	 */
 	protected void updateObjects(Collection coll, PreparedStatement stmt) throws SQLException {
+		assertIsNotNull(coll);
+		assertIsValidPreparedStatement(stmt);
+		
 		for (Iterator i = coll.iterator(); i.hasNext(); ) {
 			Persistent obj = (Persistent) i.next();
 			updateObject(obj, stmt);
@@ -167,6 +238,7 @@ public abstract class ObjectManager {
 	 * 
 	 */
 	protected void updateDependents(Persistent obj) throws SQLException {
+		assertIsValidPersistent(obj);
 		// do nothing
 	}
 	
@@ -174,9 +246,11 @@ public abstract class ObjectManager {
 	 * 
 	 */
 	protected void deleteObject(Persistent obj, PreparedStatement stmt) throws SQLException {
+		assertIsValidPersistent(obj);
+		assertIsValidPreparedStatement(stmt);
+		
 		obj.writeId(stmt, 1);
 		SysLog.logQuery(stmt);
 		stmt.executeUpdate();
 	}
-
 }

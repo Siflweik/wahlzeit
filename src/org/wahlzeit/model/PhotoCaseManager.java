@@ -48,6 +48,8 @@ public class PhotoCaseManager extends ObjectManager {
 	 * @methodtype get
 	 */
 	public static final PhotoCaseManager getInstance() {
+		assertIsNotNull(instance);
+		
 		return instance;
 	}
 	
@@ -71,12 +73,22 @@ public class PhotoCaseManager extends ObjectManager {
 		}
 	}
 	
+	protected void assertIsValidPhotoCase(PhotoCase photoCase){
+		assertIsNotNull(photoCase);
+	}
+	
 	/**
 	 * 
 	 * @methodtype factory
 	 */
 	protected PhotoCase createObject(ResultSet rset) throws SQLException {
-		return new PhotoCase(rset);
+		assertIsNotNull(rset);
+		
+		PhotoCase pCase = new PhotoCase(rset);
+		
+		assertIsValidPhotoCase(pCase);
+		
+		return pCase;
 	}
 	
 	/**
@@ -84,6 +96,8 @@ public class PhotoCaseManager extends ObjectManager {
 	 * @methodtype get
 	 */
 	public PhotoCase getPhotoCase(int id) {
+		assertIsValidID(id);
+		
 		PhotoCase result = openPhotoCases.get(id);
 		if (result == null) {
 			try {
@@ -93,6 +107,8 @@ public class PhotoCaseManager extends ObjectManager {
 			}
 		}
 		
+		assertIsValidPhotoCase(result);
+		
 		return result;
 	}
 	
@@ -101,6 +117,8 @@ public class PhotoCaseManager extends ObjectManager {
 	 * @methodtype command
 	 */
 	public void addPhotoCase(PhotoCase myCase) {
+		assertIsValidPhotoCase(myCase);
+		
 		openPhotoCases.put(myCase.getId(), myCase);
 		try {
 			createObject(myCase, getReadingStatement("INSERT INTO cases(id) VALUES(?)"), myCase.getId());
@@ -115,13 +133,18 @@ public class PhotoCaseManager extends ObjectManager {
 	 * 
 	 * @methodtype command
 	 */
-	public void removePhotoCase(PhotoCase myCase) {
+	public synchronized void removePhotoCase(PhotoCase myCase) {
+		assertIsValidPhotoCase(myCase);
+		int count = openPhotoCases.size();
+		
 		openPhotoCases.remove(myCase.getId());
 		try {
 			updateObject(myCase, getUpdatingStatement("SELECT * FROM cases WHERE id = ?"));
 		} catch (SQLException sex) {
 			SysLog.logThrowable(sex);
 		}
+		
+		assert (openPhotoCases.size() == (count - 1));
 	}	
 	
 	/**
@@ -129,6 +152,8 @@ public class PhotoCaseManager extends ObjectManager {
 	 * @methodtype command
 	 */
 	public void loadOpenPhotoCases(Collection<PhotoCase> result) {
+		assertIsNotNull(result);
+		
 		try {
 			readObjects(result, getReadingStatement("SELECT * FROM cases WHERE was_decided = FALSE"));
 		} catch (SQLException sex) {
@@ -157,6 +182,9 @@ public class PhotoCaseManager extends ObjectManager {
 	public PhotoCase[] getOpenPhotoCasesByAscendingAge() {
 		PhotoCase[] resultArray = openPhotoCases.values().toArray(new PhotoCase[0]);
 		Arrays.sort(resultArray, getPhotoCasesByAscendingAgeComparator());
+		
+		assertIsNotNull(resultArray);
+		
 		return resultArray;
 	}
 	

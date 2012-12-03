@@ -51,7 +51,11 @@ public class PhotoManager extends ObjectManager {
 	 * 
 	 */
 	public PhotoManager(ModelMain modelMain) {
+		assertIsNotNull(modelMain);
+		
 		photoTagCollector = PhotoFactory.getInstance().createPhotoTagCollector();
+		
+		assertIsNotNull(photoTagCollector);
 		
 		this.modelMain = modelMain;
 	}
@@ -60,13 +64,36 @@ public class PhotoManager extends ObjectManager {
 	 * 
 	 */
 	public final boolean hasPhoto(String id) {
+		assertIsValidStringID(id);
+		
 		return hasPhoto(PhotoId.getId(id));
+	}
+	
+	protected void assertIsValidStringID(String id)	{
+		assertIsValidString(id);
+		assertIsValidID(Integer.parseInt(id));
+	}
+	
+	protected void assertIsValidPhotoID(PhotoId id)	{
+		assertIsNotNull(id);
+		assertIsValidID(id.intValue);
+	}
+		
+	protected void assertIsValidPhoto(Photo photo)	{
+		assertIsNotNull(photo);
+		assertIsValidPhotoID(photo.getId());
+	}
+		
+	protected void assertIsValidPhotoFilter(PhotoFilter filter)	{
+		assertIsNotNull(filter);
 	}
 	
 	/**
 	 * 
 	 */
 	public final boolean hasPhoto(PhotoId id) {
+		assertIsValidPhotoID(id);
+		
 		return getPhotoFromId(id) != null;
 	}
 	
@@ -74,6 +101,8 @@ public class PhotoManager extends ObjectManager {
 	 * 
 	 */
 	public final Photo getPhoto(String id) {
+		assertIsValidStringID(id);
+		
 		return getPhotoFromId(PhotoId.getId(id));
 	}
 	
@@ -82,6 +111,8 @@ public class PhotoManager extends ObjectManager {
 	 * @methodproperties primitive
 	 */
 	protected boolean doHasPhoto(PhotoId id) {
+		assertIsValidPhotoID(id);
+		
 		return photoCache.containsKey(id);
 	}
 	
@@ -89,6 +120,8 @@ public class PhotoManager extends ObjectManager {
 	 * 
 	 */
 	public Photo getPhotoFromId(PhotoId id) {
+		assertIsValidPhotoID(id);
+		
 		if (id.isNullId()) {
 			return null;
 		}
@@ -106,6 +139,9 @@ public class PhotoManager extends ObjectManager {
 			}
 		}
 		
+		// Photo may be null?
+		//assertIsValidPhoto(result);
+		
 		return result;
 	}
 		
@@ -114,20 +150,34 @@ public class PhotoManager extends ObjectManager {
 	 * @methodproperties primitive
 	 */
 	protected Photo doGetPhotoFromId(PhotoId id) {
-		return photoCache.get(id);
+		assertIsValidPhotoID(id);
+		
+		Photo photo = photoCache.get(id);
+		
+		assertIsValidPhoto(photo);
+		
+		return photo;
 	}
 	
 	/**
 	 * 
 	 */
 	protected Photo createObject(ResultSet rset) throws SQLException {
-		return PhotoFactory.getInstance().createPhoto(rset);
+		assertIsNotNull(rset);
+		
+		Photo photo = PhotoFactory.getInstance().createPhoto(rset);
+		
+		assertIsValidPhoto(photo);
+		
+		return photo;
 	}
 	
 	/**
 	 * 
 	 */
 	public void addPhoto(Photo photo) {
+		assertIsValidPhoto(photo);
+		
 		PhotoId id = photo.getId();
 		assertIsNewPhoto(id);
 		doAddPhoto(photo);
@@ -145,6 +195,8 @@ public class PhotoManager extends ObjectManager {
 	 * @methodproperties primitive
 	 */
 	protected void doAddPhoto(Photo myPhoto) {
+		assertIsValidPhoto(myPhoto);
+		
 		photoCache.put(myPhoto.getId(), myPhoto);
 	}
 
@@ -152,10 +204,16 @@ public class PhotoManager extends ObjectManager {
 	 * 
 	 */
 	public void loadPhotos(Collection<Photo> result) {
+		assertIsNotNull(result);
+		assert (result.size() > 0);
+		
 		try {
 			readObjects(result, getReadingStatement("SELECT * FROM photos"));
 			for (Iterator<Photo> i = result.iterator(); i.hasNext(); ) {
 				Photo photo = i.next();
+				
+				assertIsValidPhoto(photo);
+				
 				if (!doHasPhoto(photo.getId())) {
 					doAddPhoto(photo);
 				} else {
@@ -168,11 +226,13 @@ public class PhotoManager extends ObjectManager {
 		
 		SysLog.logInfo("loaded all photos");
 	}
-	
+
 	/**
 	 * 
 	 */
 	public void savePhoto(Photo photo) {
+		assertIsValidPhoto(photo);
+		
 		try {
 			updateObject(photo, getUpdatingStatement("SELECT * FROM photos WHERE id = ?"));
 		} catch (SQLException sex) {
@@ -195,6 +255,8 @@ public class PhotoManager extends ObjectManager {
 	 * 
 	 */
 	public Set<Photo> findPhotosByOwner(String ownerName) {
+		assertIsValidString(ownerName);
+		
 		Set<Photo> result = new HashSet<Photo>();
 		try {
 			readObjects(result, getReadingStatement("SELECT * FROM photos WHERE owner_name = ?"), ownerName);
@@ -213,6 +275,8 @@ public class PhotoManager extends ObjectManager {
 	 * 
 	 */
 	public Photo getVisiblePhoto(PhotoFilter filter) {
+		assertIsValidPhotoFilter(filter);
+		
 		Photo result = getPhotoFromFilter(filter);
 		
 		if(result == null) {
@@ -221,6 +285,8 @@ public class PhotoManager extends ObjectManager {
 			result = getPhotoFromFilter(filter);
 		}
 
+		assertIsValidPhoto(result);
+		
 		return result;
 	}
 	
@@ -228,6 +294,8 @@ public class PhotoManager extends ObjectManager {
 	 * 
 	 */
 	protected Photo getPhotoFromFilter(PhotoFilter filter) {
+		assertIsValidPhotoFilter(filter);
+		
 		PhotoId id = filter.getRandomDisplayablePhotoId();
 		Photo result = getPhotoFromId(id);
 		while((result != null) && !result.isVisible()) {
@@ -238,6 +306,8 @@ public class PhotoManager extends ObjectManager {
 			}
 		}
 		
+		assertIsValidPhoto(result);
+		
 		return result;
 	}
 	
@@ -245,6 +315,8 @@ public class PhotoManager extends ObjectManager {
 	 * 
 	 */
 	protected java.util.List<PhotoId> getFilteredPhotoIds(PhotoFilter filter) {
+		assertIsValidPhotoFilter(filter);
+		
 		java.util.List<PhotoId> result = new LinkedList<PhotoId>();
 
 		try {
@@ -270,12 +342,16 @@ public class PhotoManager extends ObjectManager {
 					PhotoId photoId = PhotoId.getId(id);
 					if (!filter.isProcessedPhotoId(photoId)) {
 						result.add(photoId);
+						
+						assertIsValidPhotoID(photoId);
 					}
 				}
 			}
 		} catch (SQLException sex) {
 			SysLog.logThrowable(sex);
 		}
+		
+		assertIsNotNull(result);
 		
 		return result;
 	}
@@ -284,6 +360,8 @@ public class PhotoManager extends ObjectManager {
 	 * 
 	 */
 	protected PreparedStatement getUpdatingStatementFromConditions(int no) throws SQLException {
+		assert (no > -1);
+		
 		String query = "SELECT * FROM tags";
 		if (no > 0) {
 			query += " WHERE";
@@ -303,7 +381,11 @@ public class PhotoManager extends ObjectManager {
 	 * 
 	 */
 	protected void updateDependents(Persistent obj) throws SQLException {
+		assertIsValidPersistent(obj);
+		
 		Photo photo = (Photo) obj;
+		
+		assertIsValidPhoto(photo);
 		
 		deleteObject(obj, getReadingStatement("DELETE FROM tags WHERE photo_id = ?"));
 		
@@ -324,9 +406,15 @@ public class PhotoManager extends ObjectManager {
 	 * 
 	 */
 	public Photo createPhoto(File file) throws Exception {
+		assertIsNotNull(file);
+		assert (file.exists());
+		
 		PhotoId id = PhotoId.getNextId();
 		Photo result = PhotoUtil.createPhoto(file, id);
 		addPhoto(result);
+		
+		assertIsValidPhoto(result);
+		
 		return result;
 	}
 	
@@ -334,6 +422,8 @@ public class PhotoManager extends ObjectManager {
 	 * @methodtype assertion
 	 */
 	protected void assertIsNewPhoto(PhotoId id) {
+		assertIsValidPhotoID(id);
+		
 		if (hasPhoto(id)) {
 			throw new IllegalStateException("Photo already exists!");
 		}
@@ -346,6 +436,8 @@ public class PhotoManager extends ObjectManager {
 	}
 	
 	public void setModelMain(ModelMain modelMain)	{
+		assertIsNotNull(modelMain);
+		
 		this.modelMain = modelMain;
 	}
 }

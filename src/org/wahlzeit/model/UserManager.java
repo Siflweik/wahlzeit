@@ -61,6 +61,9 @@ public class UserManager extends ObjectManager {
 	protected PhotoManager photoManager;
 	
 	public UserManager(EmailServer emailServer, PhotoManager photoManager)	{
+		assertIsNotNull(emailServer);
+		assertIsNotNull(photoManager);
+		
 		this.emailServer = emailServer;
 		this.photoManager = photoManager;
 	}
@@ -69,6 +72,8 @@ public class UserManager extends ObjectManager {
 	 * 
 	 */
 	public boolean hasUserByName(String name) {
+		assertIsValidString(name);
+		
 		return hasUserByTag(Tags.asTag(name));
 	}
 	
@@ -76,6 +81,8 @@ public class UserManager extends ObjectManager {
 	 * 
 	 */
 	public boolean hasUserByTag(String tag) {
+		assertIsValidString(tag);
+		
 		return getUserByTag(tag) != null;
 	}
 	
@@ -83,6 +90,8 @@ public class UserManager extends ObjectManager {
 	 * 
 	 */
 	protected boolean doHasUserByTag(String tag) {
+		assertIsValidString(tag);
+		
 		return doGetUserByTag(tag) != null;
 	}
 	
@@ -90,6 +99,10 @@ public class UserManager extends ObjectManager {
 	 * 
 	 */
 	public User getUserByName(String name) {
+		assertIsValidString(name);
+		
+		//allow null
+		
 		return getUserByTag(Tags.asTag(name));
 	}
 	
@@ -97,6 +110,8 @@ public class UserManager extends ObjectManager {
 	 * 
 	 */
 	public User getUserByTag(String tag) {
+		assertIsValidString(tag);
+		
 		User result = doGetUserByTag(tag);
 
 		if (result == null) {
@@ -111,6 +126,8 @@ public class UserManager extends ObjectManager {
 			}
 		}
 		
+		//allow null
+		
 		return result;
 	}
 	
@@ -118,6 +135,10 @@ public class UserManager extends ObjectManager {
 	 * 
 	 */
 	protected User doGetUserByTag(String tag) {
+		assertIsValidString(tag);
+		
+		//allow null
+		
 		return users.get(tag);
 	}
 	
@@ -126,6 +147,8 @@ public class UserManager extends ObjectManager {
 	 * @methodtype factory
 	 */
 	protected User createObject(ResultSet rset) throws SQLException {
+		assertIsNotNull(rset);
+		
 		User result = null;
 
 		AccessRights rights = AccessRights.getFromInt(rset.getInt("rights"));
@@ -142,13 +165,21 @@ public class UserManager extends ObjectManager {
 			SysLog.logInfo("received NONE rights value");
 		}
 
+		assertIsNotNull(result);
+		
 		return result;
+	}
+	
+	protected void assertIsValidUser(User user)	{
+		assertIsNotNull(user);
+		assertIsValidID(user.getId());
 	}
 	
 	/**
 	 * 
 	 */
 	public void addUser(User user) {
+		assertIsValidUser(user);
 		assertIsNewUser(user);
 
 		try {
@@ -165,6 +196,8 @@ public class UserManager extends ObjectManager {
 	 * 
 	 */
 	protected void doAddUser(User user) {
+		assertIsValidUser(user);
+		
 		users.put(user.getNameAsTag(), user);
 	}
 	
@@ -172,6 +205,8 @@ public class UserManager extends ObjectManager {
 	 * 
 	 */
 	public void removeUser(User user) {
+		assertIsValidUser(user);
+		
 		doRemoveUser(user);
 
 		try {
@@ -185,6 +220,8 @@ public class UserManager extends ObjectManager {
 	 * 
 	 */
 	protected void doRemoveUser(User user) {
+		assertIsValidUser(user);
+		
 		users.remove(user.getNameAsTag());
 	}
 	
@@ -192,6 +229,9 @@ public class UserManager extends ObjectManager {
 	 * 
 	 */
 	public void loadUsers(Collection<User> result) {
+		assertIsNotNull(result);
+		assert(result.size() > 0);
+		
 		try {
 			readObjects(result, getReadingStatement("SELECT * FROM users"));
 			for (Iterator<User> i = result.iterator(); i.hasNext(); ) {
@@ -220,6 +260,9 @@ public class UserManager extends ObjectManager {
 	 * 
 	 */
 	public void emailWelcomeMessage(UserSession ctx, User user) {
+		assertIsNotNull(ctx);
+		assertIsValidUser(user);
+				
 		EmailAddress from = ctx.cfg().getAdministratorEmailAddress();
 		EmailAddress to = user.getEmailAddress();
 
@@ -231,13 +274,18 @@ public class UserManager extends ObjectManager {
 		emailBody += ctx.cfg().getGeneralEmailRegards() + "\n\n----\n";
 		emailBody += ctx.cfg().getGeneralEmailFooter() + "\n\n";
 
-		emailServer.sendEmailSilently(from, to, ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
+		boolean success = emailServer.sendEmailSilently(from, to, ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
+		
+		assert success;
 	}
 	
 	/**
 	 * 
 	 */
 	public void emailConfirmationRequest(UserSession ctx, User user) {
+		assertIsNotNull(ctx);
+		assertIsValidUser(user);
+		
 		EmailAddress from = ctx.cfg().getAdministratorEmailAddress();
 		EmailAddress to = user.getEmailAddress();
 
@@ -247,13 +295,17 @@ public class UserManager extends ObjectManager {
 		emailBody += ctx.cfg().getGeneralEmailRegards() + "\n\n----\n";
 		emailBody += ctx.cfg().getGeneralEmailFooter() + "\n\n";
 
-		emailServer.sendEmailSilently(from, to, ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
+		boolean success = emailServer.sendEmailSilently(from, to, ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
+		
+		assert success;
 	}
 	
 	/**
 	 * 
 	 */
 	public void saveUser(User user) {
+		assertIsValidUser(user);
+		
 		try {
 			updateObject(user, getUpdatingStatement("SELECT * FROM users WHERE id = ?"));
 		} catch (SQLException sex) {
@@ -264,9 +316,16 @@ public class UserManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	public void dropUser(User user) {
+	public synchronized void dropUser(User user) {
+		assertIsValidUser(user);
+		
 		saveUser(user);
+		
+		int count = users.size();
+		
 		users.remove(user.getNameAsTag());
+		
+		assert (users.size() == count - 1);
 	}
 	
 	/**
@@ -284,6 +343,10 @@ public class UserManager extends ObjectManager {
 	 * 
 	 */
 	public User getUserByEmailAddress(String emailAddress) {
+		assertIsValidString(emailAddress);
+		
+		// may be null
+		
 		return getUserByEmailAddress(EmailAddress.getFromString(emailAddress));
 	}
 
@@ -291,6 +354,8 @@ public class UserManager extends ObjectManager {
 	 * 
 	 */
 	public User getUserByEmailAddress(EmailAddress emailAddress) {
+		assertIsNotNull(emailAddress);
+		
 		User result = null;
 		try {
 			result = (User) readObject(getReadingStatement("SELECT * FROM users WHERE email_address = ?"), emailAddress.asString());
@@ -318,6 +383,5 @@ public class UserManager extends ObjectManager {
 		if (hasUserByTag(user.getNameAsTag())) {
 			throw new IllegalStateException("User already exists!");
 		}
-	}
-	
+	}	
 }
