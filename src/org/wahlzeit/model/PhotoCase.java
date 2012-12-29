@@ -44,7 +44,6 @@ public class PhotoCase extends Case {
 	/**
 	 * 
 	 */
-	protected int id = 0; // case id
 	protected int applicationId = 0; // application id (unused on Java level)
 	protected Photo photo = null; // photo id -> photo
 	protected String flagger = "unknown";
@@ -58,7 +57,7 @@ public class PhotoCase extends Case {
 	 * 
 	 */
 	public PhotoCase(Photo myPhoto) {
-		id = getNextCaseId();
+		super.setNextId();
 		photo = myPhoto;
 		
 		incWriteCount();
@@ -74,15 +73,8 @@ public class PhotoCase extends Case {
 	/**
 	 * 
 	 */
-	public String getIdAsString() {
-		return String.valueOf(id);
-	}
-	
-	/**
-	 * 
-	 */
 	public void readFrom(ResultSet rset) throws SQLException {
-		id = rset.getInt("id");
+		super.setId(rset.getInt("id"));
 		photo = PhotoManager.getPhoto(PhotoId.getId(rset.getInt("photo")));
 		createdOn = rset.getLong("creation_time");
 		
@@ -98,7 +90,7 @@ public class PhotoCase extends Case {
 	 * 
 	 */
 	public void writeOn(ResultSet rset) throws SQLException {
-		rset.updateInt("id", id);
+		rset.updateInt("id", super.getId());
 		rset.updateInt("photo", (photo == null) ? 0 : photo.getId().asInt());
 		rset.updateLong("creation_time", createdOn);
 		
@@ -114,14 +106,7 @@ public class PhotoCase extends Case {
 	 * 
 	 */
 	public void writeId(PreparedStatement stmt, int pos) throws SQLException {
-		stmt.setInt(pos, id);
-	}
-	
-	/**
-	 * 
-	 */
-	public int getId() {
-		return id;
+		stmt.setInt(pos, super.getId());
 	}
 	
 	/**

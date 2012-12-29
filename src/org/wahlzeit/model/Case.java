@@ -30,31 +30,37 @@ import org.wahlzeit.services.*;
  *
  */
 public abstract class Case extends DataObject {
+	private CaseId id;
+	
 	
 	/**
-	 * 0 is never returned, first value is 1
+	 * 
 	 */
-	protected static int lastCaseId = 0;
+	public int getId() {
+		return id.asInt();
+	}
 	
-	/**
-	 * @methodtype get
-	 */
-	public static synchronized int getLastCaseId() {
-		return lastCaseId;
+	protected void setId(int id)	{
+		this.id = CaseId.getId(id);
+	}
+	
+	protected void setNextId()	{
+		this.id = CaseId.getNextId();
 	}
 	
 	/**
-	 * @methodtype set
+	 * 
 	 */
-	public static synchronized void setLastCaseId(int newId) {
-		lastCaseId = newId;
+	public String getIdAsString() {
+		return String.valueOf(id);
 	}
 	
-	/**
-	 * @methodtype idiom
-	 */
-	public static synchronized int getNextCaseId() {
-		return ++lastCaseId;
+	/*
+	protected void setCaseId(CaseId id)	{
+		this.id = id;
 	}
 
+	protected CaseId getCaseId()	{
+		return id;
+	}*/
 }
