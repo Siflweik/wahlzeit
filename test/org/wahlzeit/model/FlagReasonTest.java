@@ -8,8 +8,12 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 public class FlagReasonTest extends TestCase {
-
+	
 	private Map<FlagReason, TestEntry> entries;
+
+	public static void main(String[] args) {
+		junit.textui.TestRunner.run(FlagReasonTest.class);
+	}
 	
 	@Override
 	protected void setUp() throws Exception {
@@ -17,14 +21,14 @@ public class FlagReasonTest extends TestCase {
 		
 		entries = new HashMap<FlagReason, TestEntry>();
 		
-		entries.put(FlagReason.MISMATCH, new TestEntry("mismatch", 0));
-		entries.put(FlagReason.OFFENSIVE, new TestEntry("offensive", 1));
-		entries.put(FlagReason.COPYRIGHT, new TestEntry("copyright", 2));
-		entries.put(FlagReason.OTHER, new TestEntry("other", 3));
+		addEntry(FlagReason.MISMATCH, "mismatch", 0);
+		addEntry(FlagReason.OFFENSIVE, "offensive", 1);
+		addEntry(FlagReason.COPYRIGHT, "copyright", 2);
+		addEntry(FlagReason.OTHER, "other", 3);
 	}
-
-	public static void main(String[] args) {
-		junit.textui.TestRunner.run(FlagReasonTest.class);
+	
+	protected void addEntry(FlagReason reason, String str, int i)	{
+		entries.put(reason, new TestEntry(str, i));
 	}
 	
 	protected void expectException(Class<? extends Exception> expected, Exception actual)	{
