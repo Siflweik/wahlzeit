@@ -27,7 +27,7 @@ public abstract class ClientRole implements Client {
 			throw new InvalidParameterException("core must not be null");
 		}
 	}
-
+	
 	@Override
 	public <R extends ClientRole> R getRoleByName(Class<R> clazz)	{
 		return core.getRoleByName(clazz);

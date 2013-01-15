@@ -24,7 +24,6 @@ import java.util.*;
 
 import org.wahlzeit.model.AccessRights;
 import org.wahlzeit.model.Photo;
-import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserSession;
 import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.utils.HtmlUtil;
@@ -50,7 +49,7 @@ public class ShowUserProfileFormHandler extends AbstractWebFormHandler {
 	 * 
 	 */
 	protected void doMakeWebPart(UserSession ctx, WebPart part) {
-		User user = (User) ctx.getClient();
+		RegisteredUserRole user = ctx.getRegisteredUser();
 
 		Photo photo = user.getUserPhoto();
 		part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));

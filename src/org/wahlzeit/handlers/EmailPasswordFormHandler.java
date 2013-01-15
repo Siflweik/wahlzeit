@@ -67,7 +67,7 @@ public class EmailPasswordFormHandler extends AbstractWebFormHandler {
 			return PartUtil.EMAIL_PASSWORD_PAGE_NAME;
 		}
 		
-		User user = userManager.getUserByName(userName);
+		RegisteredUserRole user = userManager.getUserByName(userName);
 		
 		EmailAddress from = ctx.cfg().getModeratorEmailAddress();
 		EmailAddress to = user.getEmailAddress();

@@ -53,7 +53,6 @@ public class ConfirmAccountPageHandler extends AbstractWebPageHandler {
 	 * 
 	 */
 	protected String doHandleGet(UserSession ctx, String link, Map args) {
-		Client client = ctx.getClient();
 		long confirmationCode = -1;
 		
 		try {
@@ -64,7 +63,7 @@ public class ConfirmAccountPageHandler extends AbstractWebPageHandler {
 			// NumberFormatException
 		}
 
-		RegisteredUserRole user = client.getRoleByName(RegisteredUserRole.class);
+		RegisteredUserRole user = ctx.getRegisteredUser();
 		
 		if (user != null) {
 			if (user.getConfirmationCode() == confirmationCode) {
@@ -84,9 +83,7 @@ public class ConfirmAccountPageHandler extends AbstractWebPageHandler {
 	protected void makeWebPageBody(UserSession ctx, WebPart page) {
 		String heading, msg1, msg2 = "";
 		
-		Client client = ctx.getClient();
-		
-		RegisteredUserRole user = client.getRoleByName(RegisteredUserRole.class);
+		RegisteredUserRole user = ctx.getRegisteredUser();
 		
 		if (user != null) {
 			if (user.isConfirmed()) {

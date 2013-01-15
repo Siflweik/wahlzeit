@@ -23,6 +23,8 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.*;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
+import org.wahlzeit.model.clients.roles.RoleIndex;
 import org.wahlzeit.services.*;
 import org.wahlzeit.utils.*;
 import org.wahlzeit.webparts.*;
@@ -117,12 +119,12 @@ public abstract class AbstractWebPartHandler implements WebPartHandler {
 	public final AccessRights getNeededRights() {
 		return neededRights;
 	}
-	
+		
 	/**
 	 * 
 	 */
 	protected boolean hasAccessRights(UserSession ctx, Map args) {
-		return ctx.getClient().hasRights(getNeededRights());
+		return ctx.getClient().hasRole(RoleIndex.getRoleByAccessRights(getNeededRights()));
 	}
 	
 	/**
@@ -207,7 +209,8 @@ public abstract class AbstractWebPartHandler implements WebPartHandler {
 
 		String msg1 = ctx.cfg().getIllegalArgumentError();
 		String msg2 = ctx.cfg().getContinueWithShowPhoto();
-		if (ctx.getClient() instanceof User) {
+
+		if (ctx.getClient().hasRole(RegisteredUserRole.class)) {
 			msg2 = ctx.cfg().getContinueWithShowUserHome();
 		}
 		
@@ -224,7 +227,8 @@ public abstract class AbstractWebPartHandler implements WebPartHandler {
 
 		String msg1 = ctx.cfg().getInternalProcessingError();
 		String msg2 = ctx.cfg().getContinueWithShowPhoto();
-		if (ctx.getClient() instanceof User) {
+		
+		if (ctx.getClient().hasRole(RegisteredUserRole.class)) {
 			msg2 = ctx.cfg().getContinueWithShowUserHome();
 		}
 		

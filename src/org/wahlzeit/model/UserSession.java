@@ -102,6 +102,14 @@ public class UserSession extends Session {
 		return client;
 	}
 	
+	public RegisteredUserRole getRegisteredUser()	{
+		return client.getRoleByName(RegisteredUserRole.class);
+	}
+	
+	public boolean isRegisteredUser()	{
+		return client.hasRole(RegisteredUserRole.class);
+	}
+	
 	/**
 	 * @methodtype set
 	 */
@@ -395,8 +403,4 @@ public class UserSession extends Session {
 		savedArgs.put(key, result);
 		return result;
 	}
-	
-	protected RegisteredUserRole getRegisteredUser()	{
-		return client.getRoleByName(RegisteredUserRole.class);
-	}	
 }

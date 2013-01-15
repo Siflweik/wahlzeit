@@ -23,7 +23,6 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.AccessRights;
-import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserSession;
 import org.wahlzeit.model.clients.roles.RegisteredUserRole;
@@ -53,7 +52,7 @@ public class ChangePasswordFormHandler extends AbstractWebFormHandler {
 		Map<String, Object> args = ctx.getSavedArgs();
 		part.addStringFromArgs(args, UserSession.MESSAGE);
 
-		User user = (User) ctx.getClient();
+		RegisteredUserRole user = ctx.getRegisteredUser();
 		part.addStringFromArgsWithDefault(args, RegisteredUserRole.PASSWORD, user.getPassword());
 		part.addStringFromArgsWithDefault(args, RegisteredUserRole.PASSWORD_AGAIN, user.getPassword());
 	}
@@ -76,7 +75,7 @@ public class ChangePasswordFormHandler extends AbstractWebFormHandler {
 			return PartUtil.SIGNUP_PAGE_NAME;
 		}
 
-		User user = (User) ctx.getClient();
+		RegisteredUserRole user = ctx.getRegisteredUser();
 		user.setPassword(password);
 		
 		UserLog.logPerformedAction("ChangePassword");

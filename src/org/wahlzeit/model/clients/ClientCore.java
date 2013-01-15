@@ -3,6 +3,7 @@ package org.wahlzeit.model.clients;
 import java.util.HashMap;
 
 import org.wahlzeit.services.EmailAddress;
+import org.wahlzeit.services.SysLog;
 
 public class ClientCore implements Client {
 	private HashMap<Class<? extends ClientRole>, ClientRole> roles;
@@ -27,6 +28,7 @@ public class ClientCore implements Client {
 		} catch (Exception ex)	{
 		}
 	
+		SysLog.logError("Role '" + clazz + "' could not be found!");
 		return null;
 	}
 	

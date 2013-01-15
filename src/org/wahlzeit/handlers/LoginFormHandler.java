@@ -23,7 +23,6 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.AccessRights;
-import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserManager;
 import org.wahlzeit.model.UserSession;
@@ -82,7 +81,7 @@ public class LoginFormHandler extends AbstractWebFormHandler {
 			return PartUtil.LOGIN_PAGE_NAME;
 		}
 		
-		User user = userManager.getUserByName(userName);
+		RegisteredUserRole user = userManager.getUserByName(userName);
 		if (!user.hasPassword(password)) {
 			ctx.setMessage(ctx.cfg().getLoginIsIncorrect());
 			return PartUtil.LOGIN_PAGE_NAME;

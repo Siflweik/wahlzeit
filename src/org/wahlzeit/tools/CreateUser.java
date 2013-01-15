@@ -22,9 +22,12 @@ package org.wahlzeit.tools;
 
 import java.io.*;
 
+import org.wahlzeit.services.EmailAddress;
 import org.wahlzeit.utils.*;
 import org.wahlzeit.main.*;
 import org.wahlzeit.model.*;
+import org.wahlzeit.model.clients.ClientCore;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 
 /**
  * 
@@ -74,7 +77,9 @@ public class CreateUser extends ModelMain {
 	protected void execute() throws Exception {
 		UserManager userManager = UserManager.getInstance();
 		long confirmationCode = userManager.createConfirmationCode();
-		User user = new User(userName, password, "info@wahlzeit.org", confirmationCode);
+		
+		ClientCore core = new ClientCore(EmailAddress.getFromString("info@wahlzeit.org"));
+		RegisteredUserRole user = new RegisteredUserRole(core, userName, password, confirmationCode);
 		userManager.addUser(user);
 		
 		PhotoManager photoManager = PhotoManager.getInstance();

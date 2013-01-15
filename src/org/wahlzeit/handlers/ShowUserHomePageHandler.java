@@ -21,6 +21,7 @@
 package org.wahlzeit.handlers;
 
 import org.wahlzeit.model.*;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.utils.*;
 import org.wahlzeit.webparts.*;
 
@@ -45,7 +46,7 @@ public class ShowUserHomePageHandler extends AbstractWebPageHandler {
 		Writable part = makeUserProfileForm(ctx);
 		page.addWritable("profile", part);
 		
-		User user = (User) ctx.getClient();
+		RegisteredUserRole user = ctx.getRegisteredUser();
 		Photo[] photos = user.getPhotos();
 		boolean wasEmpty = true;
 		if (photos.length != 0) {

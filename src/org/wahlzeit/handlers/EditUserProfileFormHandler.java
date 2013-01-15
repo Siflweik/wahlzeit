@@ -49,7 +49,7 @@ public class EditUserProfileFormHandler extends AbstractWebFormHandler {
 		Map<String, Object> args = ctx.getSavedArgs();
 		part.addStringFromArgs(args, UserSession.MESSAGE);
 
-		User user = (User) ctx.getClient();
+		RegisteredUserRole user = ctx.getRegisteredUser();
 		part.maskAndAddString(RegisteredUserRole.NAME, user.getName());
 
 		Photo photo = user.getUserPhoto();
@@ -81,7 +81,7 @@ public class EditUserProfileFormHandler extends AbstractWebFormHandler {
 			return PartUtil.EDIT_USER_PROFILE_PAGE_NAME;
 		}
 		
-		User user = (User) ctx.getClient();
+		RegisteredUserRole user = ctx.getRegisteredUser();
 		
 		user.setEmailAddress(EmailAddress.getFromString(emailAddress));
 	

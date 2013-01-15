@@ -23,6 +23,7 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.*;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.services.*;
 import org.wahlzeit.utils.*;
 import org.wahlzeit.webparts.*;
@@ -82,7 +83,7 @@ public class ShowUserPhotoFormHandler extends AbstractWebFormHandler {
 		Photo photo = PhotoManager.getPhoto(id);
 
 		UserManager userManager = UserManager.getInstance();
-		User user = userManager.getUserByName(photo.getOwnerName());
+		RegisteredUserRole user = userManager.getUserByName(photo.getOwnerName());
 		if (ctx.isFormType(args, "edit")) {
 			ctx.setPhoto(photo);
 			result = PartUtil.EDIT_USER_PHOTO_PAGE_NAME;

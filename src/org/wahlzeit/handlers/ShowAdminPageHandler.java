@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.wahlzeit.main.*;
 import org.wahlzeit.model.*;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.services.*;
 import org.wahlzeit.utils.*;
 import org.wahlzeit.webparts.*;
@@ -69,7 +70,7 @@ public class ShowAdminPageHandler extends AbstractWebPageHandler implements WebF
 		WebFormHandler handler = getFormHandler(PartUtil.NULL_FORM_NAME);
 
 		String userId = ctx.getSavedArg("userId").toString();
-		User user = UserManager.getInstance().getUserByName(userId);
+		RegisteredUserRole user = UserManager.getInstance().getUserByName(userId);
 		if (user != null) {
 			handler = getFormHandler(PartUtil.ADMIN_USER_PROFILE_FORM_NAME);
 		}
@@ -121,7 +122,7 @@ public class ShowAdminPageHandler extends AbstractWebPageHandler implements WebF
 	 */
 	protected String performAdminUserProfileRequest(UserSession ctx, Map args) {
 		String userId = ctx.getAndSaveAsString(args, "userId");
-		User user = UserManager.getInstance().getUserByName(userId);
+		RegisteredUserRole user = UserManager.getInstance().getUserByName(userId);
 		if (user == null) {
 			ctx.setMessage(ctx.cfg().getUserNameIsUnknown());
 		}

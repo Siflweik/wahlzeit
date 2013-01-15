@@ -25,6 +25,7 @@ import java.io.*;
 import org.mortbay.util.IO;
 
 import org.wahlzeit.model.*;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.services.*;
 import org.wahlzeit.utils.*;
 import org.wahlzeit.webparts.*;
@@ -73,7 +74,7 @@ public class UploadPhotoFormHandler extends AbstractWebFormHandler {
 			String targetFileName = SysConfig.getBackupDirAsString() + photo.getId().asString();
 			createBackup(sourceFileName, targetFileName);
 		
-			User user = (User) ctx.getClient();
+			RegisteredUserRole user = ctx.getRegisteredUser();
 			user.addPhoto(photo); 
 			
 			photo.setTags(new Tags(tags));
