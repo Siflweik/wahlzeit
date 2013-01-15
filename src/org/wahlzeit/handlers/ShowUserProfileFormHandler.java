@@ -26,6 +26,7 @@ import org.wahlzeit.model.AccessRights;
 import org.wahlzeit.model.Photo;
 import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserSession;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.utils.HtmlUtil;
 import org.wahlzeit.webparts.WebPart;
 
@@ -54,15 +55,15 @@ public class ShowUserProfileFormHandler extends AbstractWebFormHandler {
 		Photo photo = user.getUserPhoto();
 		part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));
 		
-		part.maskAndAddString(User.NAME, user.getName());
-		part.addString(User.STATUS, ctx.cfg().asValueString(user.getStatus()));
-		part.maskAndAddString(User.EMAIL_ADDRESS, user.getEmailAddress().asString());
-		part.addString(User.MEMBER_SINCE, ctx.cfg().asDateString(user.getCreationTime()));
-		part.addString(User.NOTIFY_ABOUT_PRAISE, ctx.cfg().asYesOrNoString(user.getNotifyAboutPraise()));
-		part.addString(User.HOME_PAGE, HtmlUtil.asHref(user.getHomePage().toString()));
-		part.addString(User.NO_PHOTOS, String.valueOf(user.getNoPhotos()));
-		part.addString(User.GENDER, ctx.cfg().asValueString(user.getGender()));
-		part.addString(User.LANGUAGE, ctx.cfg().asValueString(user.getLanguage()));
+		part.maskAndAddString(RegisteredUserRole.NAME, user.getName());
+		part.addString(RegisteredUserRole.STATUS, ctx.cfg().asValueString(user.getStatus()));
+		part.maskAndAddString(RegisteredUserRole.EMAIL_ADDRESS, user.getEmailAddress().asString());
+		part.addString(RegisteredUserRole.MEMBER_SINCE, ctx.cfg().asDateString(user.getCreationTime()));
+		part.addString(RegisteredUserRole.NOTIFY_ABOUT_PRAISE, ctx.cfg().asYesOrNoString(user.getNotifyAboutPraise()));
+		part.addString(RegisteredUserRole.HOME_PAGE, HtmlUtil.asHref(user.getHomePage().toString()));
+		part.addString(RegisteredUserRole.NO_PHOTOS, String.valueOf(user.getNoPhotos()));
+		part.addString(RegisteredUserRole.GENDER, ctx.cfg().asValueString(user.getGender()));
+		part.addString(RegisteredUserRole.LANGUAGE, ctx.cfg().asValueString(user.getLanguage()));
 	}
 
 	/**

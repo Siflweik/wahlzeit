@@ -27,6 +27,7 @@ import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserManager;
 import org.wahlzeit.model.UserSession;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.utils.StringUtil;
 import org.wahlzeit.webparts.WebPart;
 
@@ -55,15 +56,15 @@ public class LoginFormHandler extends AbstractWebFormHandler {
 		
 //		part.addString(WebContext.MESSAGE, ctx.getMessage());
 
-		part.maskAndAddStringFromArgs(args, User.NAME);
+		part.maskAndAddStringFromArgs(args, RegisteredUserRole.NAME);
 	}
 
 	/**
 	 * 
 	 */
 	protected String doHandlePost(UserSession ctx, Map args) {
-		String userName = ctx.getAndSaveAsString(args, User.NAME);
-		String password = ctx.getAndSaveAsString(args, User.PASSWORD);
+		String userName = ctx.getAndSaveAsString(args, RegisteredUserRole.NAME);
+		String password = ctx.getAndSaveAsString(args, RegisteredUserRole.PASSWORD);
 		
 		UserManager userManager = UserManager.getInstance();
 		

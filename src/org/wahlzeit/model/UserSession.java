@@ -22,6 +22,10 @@ package org.wahlzeit.model;
 
 import java.util.*;
 
+import org.wahlzeit.model.clients.Client;
+import org.wahlzeit.model.clients.ClientCore;
+import org.wahlzeit.model.clients.roles.GuestRole;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.services.*;
 import org.wahlzeit.utils.*;
 
@@ -47,7 +51,7 @@ public class UserSession extends Session {
 	 */
 	protected ModelConfig configuration = LanguageConfigs.get(Language.ENGLISH);
 
-	protected Client client = new Guest();
+	protected Client client = new ClientCore();
 	protected PhotoSize photoSize = PhotoSize.MEDIUM;
 	protected long confirmationCode = -1; // -1 means not set
 	protected PhotoFilter photoFilter = PhotoFactory.getInstance().createPhotoFilter();
@@ -63,6 +67,8 @@ public class UserSession extends Session {
 	 */
 	public UserSession(String ctxName) {
 		initialize(ctxName);
+		
+		client.addRole(new GuestRole(new ClientCore()));
 	}
 	
 	/**
@@ -110,8 +116,10 @@ public class UserSession extends Session {
 		String result = "anon";
 		if (!StringUtil.isNullOrEmptyString(getEmailAddressAsString())) {
 			result = getEmailAddressAsString();
-			if (client instanceof User) {
-				User user = (User) client;
+			
+			RegisteredUserRole user = getRegisteredUser();
+			
+			if (user != null)	{
 				result = user.getName();
 			} 
 		}
@@ -313,11 +321,12 @@ public class UserSession extends Session {
 	 */
 	public boolean isPhotoOwner(Photo photo) {
 		boolean result = false;
-		Client client = getClient();
-		if ((photo != null) && (client instanceof User)) {
-			User user = (User) client;
+		RegisteredUserRole user = getRegisteredUser();
+		
+		if ((photo != null) && (user != null)) {
 			result = photo.getOwnerName().equals(user.getName());
 		}
+		
 		return result;
 	}
 	
@@ -387,4 +396,7 @@ public class UserSession extends Session {
 		return result;
 	}
 	
+	protected RegisteredUserRole getRegisteredUser()	{
+		return client.getRoleByName(RegisteredUserRole.class);
+	}	
 }

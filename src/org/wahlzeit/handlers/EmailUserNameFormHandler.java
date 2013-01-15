@@ -23,6 +23,7 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.*;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.services.mailing.*;
 import org.wahlzeit.services.EmailAddress;
 import org.wahlzeit.utils.StringUtil;
@@ -48,14 +49,14 @@ public class EmailUserNameFormHandler extends AbstractWebFormHandler {
 	protected void doMakeWebPart(UserSession ctx, WebPart part) {
 		Map<String, Object> savedArgs = ctx.getSavedArgs();
 		part.addStringFromArgs(savedArgs, UserSession.MESSAGE);
-		part.maskAndAddStringFromArgs(savedArgs, User.EMAIL_ADDRESS);
+		part.maskAndAddStringFromArgs(savedArgs, RegisteredUserRole.EMAIL_ADDRESS);
 	}
 	
 	/**
 	 * 
 	 */
 	protected String doHandlePost(UserSession ctx, Map args) {
-		String emailAddress = ctx.getAndSaveAsString(args, User.EMAIL_ADDRESS);
+		String emailAddress = ctx.getAndSaveAsString(args, RegisteredUserRole.EMAIL_ADDRESS);
 		if (StringUtil.isNullOrEmptyString(emailAddress)) {
 			ctx.setMessage(ctx.cfg().getFieldIsMissing());
 			return PartUtil.EMAIL_PASSWORD_PAGE_NAME;

@@ -23,6 +23,8 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.*;
+import org.wahlzeit.model.clients.Client;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.utils.*;
 import org.wahlzeit.webparts.*;
 
@@ -62,8 +64,9 @@ public class ConfirmAccountPageHandler extends AbstractWebPageHandler {
 			// NumberFormatException
 		}
 
-		if (client instanceof User) {
-			User user = (User) client;
+		RegisteredUserRole user = client.getRoleByName(RegisteredUserRole.class);
+		
+		if (user != null) {
 			if (user.getConfirmationCode() == confirmationCode) {
 				user.setConfirmed();
 			} else {
@@ -82,8 +85,10 @@ public class ConfirmAccountPageHandler extends AbstractWebPageHandler {
 		String heading, msg1, msg2 = "";
 		
 		Client client = ctx.getClient();
-		if (client instanceof User) {
-			User user = (User) client;
+		
+		RegisteredUserRole user = client.getRoleByName(RegisteredUserRole.class);
+		
+		if (user != null) {
 			if (user.isConfirmed()) {
 				heading = ctx.cfg().getThankYou();
 				msg1 = ctx.cfg().getConfirmAccountSucceeded();

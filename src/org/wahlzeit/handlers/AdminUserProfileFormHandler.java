@@ -23,6 +23,7 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.*;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.services.*;
 import org.wahlzeit.utils.*;
 import org.wahlzeit.webparts.*;
@@ -48,22 +49,22 @@ public class AdminUserProfileFormHandler extends AbstractWebFormHandler {
 		Map<String, Object> args = ctx.getSavedArgs();
 
 		String userId = ctx.getAndSaveAsString(args, "userId");
-		User user = UserManager.getInstance().getUserByName(userId);
+		RegisteredUserRole user = UserManager.getInstance().getUserByName(userId);
 	
 		Photo photo = user.getUserPhoto();
 		part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));
 
 		part.maskAndAddString("userId", user.getName());
-		part.maskAndAddString(User.NAME, user.getName());
-		part.addSelect(User.STATUS, UserStatus.class, (String) args.get(User.STATUS));
-		part.addSelect(User.RIGHTS, AccessRights.class, (String) args.get(User.RIGHTS));
-		part.addSelect(User.GENDER, Gender.class, (String) args.get(User.GENDER));
-		part.addSelect(User.LANGUAGE, Language.class, (String) args.get(User.LANGUAGE));
-		part.maskAndAddStringFromArgsWithDefault(args, User.EMAIL_ADDRESS, user.getEmailAddress().asString());
-		part.maskAndAddStringFromArgsWithDefault(args, User.HOME_PAGE, user.getHomePage().toString());
+		part.maskAndAddString(RegisteredUserRole.NAME, user.getName());
+		part.addSelect(RegisteredUserRole.STATUS, UserStatus.class, (String) args.get(RegisteredUserRole.STATUS));
+		part.addSelect(RegisteredUserRole.RIGHTS, AccessRights.class, (String) args.get(RegisteredUserRole.RIGHTS));
+		part.addSelect(RegisteredUserRole.GENDER, Gender.class, (String) args.get(RegisteredUserRole.GENDER));
+		part.addSelect(RegisteredUserRole.LANGUAGE, Language.class, (String) args.get(RegisteredUserRole.LANGUAGE));
+		part.maskAndAddStringFromArgsWithDefault(args, RegisteredUserRole.EMAIL_ADDRESS, user.getEmailAddress().asString());
+		part.maskAndAddStringFromArgsWithDefault(args, RegisteredUserRole.HOME_PAGE, user.getHomePage().toString());
 		
 		if (user.getNotifyAboutPraise()) {
-			part.addString(User.NOTIFY_ABOUT_PRAISE, HtmlUtil.CHECKBOX_CHECK);
+			part.addString(RegisteredUserRole.NOTIFY_ABOUT_PRAISE, HtmlUtil.CHECKBOX_CHECK);
 		}
 	}
 
@@ -73,15 +74,15 @@ public class AdminUserProfileFormHandler extends AbstractWebFormHandler {
 	protected String doHandlePost(UserSession ctx, Map args) {
 		UserManager um = UserManager.getInstance();
 		String userId = ctx.getAndSaveAsString(args, "userId");
-		User user = um.getUserByName(userId);
+		RegisteredUserRole user = um.getUserByName(userId);
 		
-		String status = ctx.getAndSaveAsString(args, User.STATUS);
-		String rights = ctx.getAndSaveAsString(args, User.RIGHTS);
-		String gender = ctx.getAndSaveAsString(args, User.GENDER);
-		String language = ctx.getAndSaveAsString(args, User.LANGUAGE);
-		String emailAddress = ctx.getAndSaveAsString(args, User.EMAIL_ADDRESS);
-		String homePage = ctx.getAndSaveAsString(args, User.HOME_PAGE);
-		String notifyAboutPraise = ctx.getAndSaveAsString(args, User.NOTIFY_ABOUT_PRAISE);
+		String status = ctx.getAndSaveAsString(args, RegisteredUserRole.STATUS);
+		String rights = ctx.getAndSaveAsString(args, RegisteredUserRole.RIGHTS);
+		String gender = ctx.getAndSaveAsString(args, RegisteredUserRole.GENDER);
+		String language = ctx.getAndSaveAsString(args, RegisteredUserRole.LANGUAGE);
+		String emailAddress = ctx.getAndSaveAsString(args, RegisteredUserRole.EMAIL_ADDRESS);
+		String homePage = ctx.getAndSaveAsString(args, RegisteredUserRole.HOME_PAGE);
+		String notifyAboutPraise = ctx.getAndSaveAsString(args, RegisteredUserRole.NOTIFY_ABOUT_PRAISE);
 		
 		if (!StringUtil.isValidStrictEmailAddress(emailAddress)) {
 			ctx.setMessage(ctx.cfg().getEmailAddressIsInvalid());

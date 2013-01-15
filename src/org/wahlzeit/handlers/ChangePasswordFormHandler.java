@@ -26,6 +26,7 @@ import org.wahlzeit.model.AccessRights;
 import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserSession;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.utils.StringUtil;
 import org.wahlzeit.webparts.WebPart;
 
@@ -53,16 +54,16 @@ public class ChangePasswordFormHandler extends AbstractWebFormHandler {
 		part.addStringFromArgs(args, UserSession.MESSAGE);
 
 		User user = (User) ctx.getClient();
-		part.addStringFromArgsWithDefault(args, User.PASSWORD, user.getPassword());
-		part.addStringFromArgsWithDefault(args, User.PASSWORD_AGAIN, user.getPassword());
+		part.addStringFromArgsWithDefault(args, RegisteredUserRole.PASSWORD, user.getPassword());
+		part.addStringFromArgsWithDefault(args, RegisteredUserRole.PASSWORD_AGAIN, user.getPassword());
 	}
 
 	/**
 	 * 
 	 */
 	protected String doHandlePost(UserSession ctx, Map args) {
-		String password = ctx.getAndSaveAsString(args, User.PASSWORD);
-		String passwordAgain = ctx.getAndSaveAsString(args, User.PASSWORD_AGAIN);
+		String password = ctx.getAndSaveAsString(args, RegisteredUserRole.PASSWORD);
+		String passwordAgain = ctx.getAndSaveAsString(args, RegisteredUserRole.PASSWORD_AGAIN);
 		
 		if (StringUtil.isNullOrEmptyString(password)) {
 			ctx.setMessage(ctx.cfg().getFieldIsMissing());

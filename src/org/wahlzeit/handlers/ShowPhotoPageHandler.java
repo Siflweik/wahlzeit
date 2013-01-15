@@ -23,6 +23,8 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.*;
+import org.wahlzeit.model.clients.Client;
+import org.wahlzeit.model.clients.roles.ModeratorRole;
 import org.wahlzeit.services.*;
 import org.wahlzeit.utils.*;
 import org.wahlzeit.webparts.*;
@@ -141,7 +143,7 @@ public class ShowPhotoPageHandler extends AbstractWebPageHandler implements WebF
 		}
 		
 		Client client = ctx.getClient();
-		if (!photo.isVisible() && !client.hasModeratorRights() && !ctx.isPhotoOwner(photo)) {
+		if (!photo.isVisible() && !client.hasRole(ModeratorRole.class) && !ctx.isPhotoOwner(photo)) {
 			page.addString("mainWidth", String.valueOf(pagePhotoSize.getMaxPhotoWidth()));
 			WebPart done = createWebPart(ctx, PartUtil.HIDDEN_INFO_FILE);
 			page.addWritable(Photo.IMAGE, done);

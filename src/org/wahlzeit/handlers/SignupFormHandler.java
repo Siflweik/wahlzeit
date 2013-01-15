@@ -27,6 +27,7 @@ import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserManager;
 import org.wahlzeit.model.UserSession;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.utils.StringUtil;
 import org.wahlzeit.webparts.WebPart;
 
@@ -55,22 +56,22 @@ public class SignupFormHandler extends AbstractWebFormHandler {
 		
 //		part.addString(WebContext.MESSAGE, ctx.getMessage());
 		
-		part.addStringFromArgs(args, User.PASSWORD);
-		part.addStringFromArgs(args, User.PASSWORD_AGAIN);
+		part.addStringFromArgs(args, RegisteredUserRole.PASSWORD);
+		part.addStringFromArgs(args, RegisteredUserRole.PASSWORD_AGAIN);
 
-		part.maskAndAddStringFromArgs(args, User.NAME);
-		part.maskAndAddStringFromArgsWithDefault(args, User.EMAIL_ADDRESS, ctx.getEmailAddressAsString());
+		part.maskAndAddStringFromArgs(args, RegisteredUserRole.NAME);
+		part.maskAndAddStringFromArgsWithDefault(args, RegisteredUserRole.EMAIL_ADDRESS, ctx.getEmailAddressAsString());
 	}
 	
 	/**
 	 * 
 	 */
 	protected String doHandlePost(UserSession ctx, Map args) {
-		String userName = ctx.getAndSaveAsString(args, User.NAME);
-		String password = ctx.getAndSaveAsString(args, User.PASSWORD);
-		String passwordAgain = ctx.getAndSaveAsString(args, User.PASSWORD_AGAIN);
-		String emailAddress = ctx.getAndSaveAsString(args, User.EMAIL_ADDRESS);
-		String terms = ctx.getAndSaveAsString(args, User.TERMS);
+		String userName = ctx.getAndSaveAsString(args, RegisteredUserRole.NAME);
+		String password = ctx.getAndSaveAsString(args, RegisteredUserRole.PASSWORD);
+		String passwordAgain = ctx.getAndSaveAsString(args, RegisteredUserRole.PASSWORD_AGAIN);
+		String emailAddress = ctx.getAndSaveAsString(args, RegisteredUserRole.EMAIL_ADDRESS);
+		String terms = ctx.getAndSaveAsString(args, RegisteredUserRole.TERMS);
 		
 		UserManager userManager = UserManager.getInstance();
 		

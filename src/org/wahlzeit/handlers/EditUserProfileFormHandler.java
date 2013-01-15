@@ -23,6 +23,7 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.*;
+import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.services.*;
 import org.wahlzeit.utils.*;
 import org.wahlzeit.webparts.*;
@@ -49,28 +50,28 @@ public class EditUserProfileFormHandler extends AbstractWebFormHandler {
 		part.addStringFromArgs(args, UserSession.MESSAGE);
 
 		User user = (User) ctx.getClient();
-		part.maskAndAddString(User.NAME, user.getName());
+		part.maskAndAddString(RegisteredUserRole.NAME, user.getName());
 
 		Photo photo = user.getUserPhoto();
 		part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));
-		part.addSelect(User.GENDER, Gender.class, (String) args.get(User.GENDER), user.getGender()); 
-		part.addSelect(User.LANGUAGE, Language.class, (String) args.get(User.LANGUAGE), user.getLanguage());
+		part.addSelect(RegisteredUserRole.GENDER, Gender.class, (String) args.get(user), user.getGender()); 
+		part.addSelect(RegisteredUserRole.LANGUAGE, Language.class, (String) args.get(RegisteredUserRole.LANGUAGE), user.getLanguage());
 		
-		part.maskAndAddStringFromArgsWithDefault(args, User.EMAIL_ADDRESS, user.getEmailAddress().asString());
+		part.maskAndAddStringFromArgsWithDefault(args, RegisteredUserRole.EMAIL_ADDRESS, user.getEmailAddress().asString());
 		
-		part.addString(User.NOTIFY_ABOUT_PRAISE, HtmlUtil.asCheckboxCheck(user.getNotifyAboutPraise()));
+		part.addString(RegisteredUserRole.NOTIFY_ABOUT_PRAISE, HtmlUtil.asCheckboxCheck(user.getNotifyAboutPraise()));
 
-		part.maskAndAddStringFromArgsWithDefault(args, User.HOME_PAGE, user.getHomePage().toString());
+		part.maskAndAddStringFromArgsWithDefault(args, RegisteredUserRole.HOME_PAGE, user.getHomePage().toString());
 	}
 
 	/**
 	 * 
 	 */
 	protected String doHandlePost(UserSession ctx, Map args) {
-		String emailAddress = ctx.getAndSaveAsString(args, User.EMAIL_ADDRESS);
-		String homePage = ctx.getAndSaveAsString(args, User.HOME_PAGE);
-		String gender = ctx.getAndSaveAsString(args, User.GENDER);
-		String language = ctx.getAndSaveAsString(args, User.LANGUAGE);
+		String emailAddress = ctx.getAndSaveAsString(args, RegisteredUserRole.EMAIL_ADDRESS);
+		String homePage = ctx.getAndSaveAsString(args, RegisteredUserRole.HOME_PAGE);
+		String gender = ctx.getAndSaveAsString(args, RegisteredUserRole.GENDER);
+		String language = ctx.getAndSaveAsString(args, RegisteredUserRole.LANGUAGE);
 		
 		if (!StringUtil.isValidStrictEmailAddress(emailAddress)) {
 			ctx.setMessage(ctx.cfg().getEmailAddressIsInvalid());
@@ -84,7 +85,7 @@ public class EditUserProfileFormHandler extends AbstractWebFormHandler {
 		
 		user.setEmailAddress(EmailAddress.getFromString(emailAddress));
 	
-		String status = ctx.getAndSaveAsString(args, User.NOTIFY_ABOUT_PRAISE);
+		String status = ctx.getAndSaveAsString(args, RegisteredUserRole.NOTIFY_ABOUT_PRAISE);
 		boolean notify = (status != null) && status.equals("on");
 		user.setNotifyAboutPraise(notify);
 
