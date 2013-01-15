@@ -8,7 +8,7 @@ public interface Client {
 	
 	public boolean hasRole(Class<? extends ClientRole> role);
 	public void addRole(ClientRole role);
-	public void removeRole(ClientRole role);
+	public void removeRole(Class<? extends ClientRole> clazz);
 	
 	public EmailAddress getEmailAddress();
 	public void setEmailAddress(EmailAddress emailAddress);

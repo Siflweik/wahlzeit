@@ -45,10 +45,8 @@ public class ClientCore implements Client {
 	}
 
 	@Override
-	public void removeRole(ClientRole role) {
-		if (role != null)	{
-			roles.remove(role.getAccessRights());
-		}
+	public void removeRole(Class<? extends ClientRole> clazz) {
+		roles.remove(clazz);
 	}
 	
 	@Override

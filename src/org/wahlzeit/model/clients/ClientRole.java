@@ -44,8 +44,8 @@ public abstract class ClientRole implements Client {
 	}
 	
 	@Override
-	public void removeRole(ClientRole role) {
-		core.removeRole(role);
+	public void removeRole(Class<? extends ClientRole> clazz) {
+		core.removeRole(clazz);
 	}
 	
 	public AccessRights getAccessRights()	{
