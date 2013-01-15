@@ -25,6 +25,11 @@ import java.net.*;
 import java.sql.*;
 
 import org.wahlzeit.services.*;
+import org.wahlzeit.services.persistence.PersistentDecorator;
+import org.wahlzeit.services.persistence.PersistentField;
+import org.wahlzeit.services.persistence.serializers.IntegerSerializer;
+import org.wahlzeit.services.persistence.serializers.LongSerializer;
+import org.wahlzeit.services.persistence.serializers.StringSerializer;
 import org.wahlzeit.utils.*;
 
 /**
@@ -94,8 +99,13 @@ public class User extends Client implements Persistent {
 	/**
 	 * 
 	 */
+	@PersistentField(columnName="id", serializerClass = IntegerSerializer.class)
 	protected int id;
+	
+	@PersistentField(columnName = "name", serializerClass = StringSerializer.class)
 	protected String name;
+	
+	@PersistentField(columnName = "name_as_tag", serializerClass = StringSerializer.class)
 	protected String nameAsTag;
 	protected String password;
 	
@@ -118,7 +128,10 @@ public class User extends Client implements Persistent {
 	/**
 	 * 
 	 */
+	@PersistentField(columnName = "creation_time", serializerClass = LongSerializer.class)
 	protected long creationTime = System.currentTimeMillis();
+	
+	private PersistentDecorator decorator;
 	
 	/**
 	 * 
@@ -132,12 +145,16 @@ public class User extends Client implements Persistent {
 	 */
 	public User(String myName, String myPassword, EmailAddress myEmailAddress, long vc) {
 		initialize(AccessRights.USER, myEmailAddress, myName, myPassword, vc);
+		
+		decorator = new PersistentDecorator(this);
 	}
 	
 	/**
 	 * 
 	 */
 	public User(ResultSet rset) throws SQLException {
+		decorator = new PersistentDecorator(this);
+		
 		readFrom(rset);
 	}
 	
@@ -178,21 +195,21 @@ public class User extends Client implements Persistent {
 	 * 
 	 */
 	public boolean isDirty() {
-		return writeCount != 0;
+		return decorator.isDirty();
 	}
 	
 	/**
 	 * 
 	 */
 	public final void incWriteCount() {
-		writeCount++;
+		decorator.incWriteCount();
 	}
 	
 	/**
 	 * 
 	 */
 	public void resetWriteCount() {
-		writeCount = 0;
+		decorator.incWriteCount();
 	}
 	
 	/**
@@ -207,27 +224,33 @@ public class User extends Client implements Persistent {
 	 * @methodtype command
 	 */
 	public void readFrom(ResultSet rset) throws SQLException {
+		decorator.readFrom(rset);
+		
 		id = rset.getInt("id");
 		name = rset.getString("name");
 		nameAsTag = rset.getString("name_as_tag");
-		emailAddress = EmailAddress.getFromString(rset.getString("email_address"));
+		creationTime = rset.getLong("creation_time");
 		password = rset.getString("password");
+		notifyAboutPraise = rset.getBoolean("notify_about_praise");
+		confirmationCode = rset.getLong("confirmation_code");
+				
+		emailAddress = EmailAddress.getFromString(rset.getString("email_address"));
 		rights = AccessRights.getFromInt(rset.getInt("rights"));
 		language = Language.getFromInt(rset.getInt("language"));
-		notifyAboutPraise = rset.getBoolean("notify_about_praise");
 		homePage = StringUtil.asUrlOrDefault(rset.getString("home_page"), getDefaultHomePage());
 		gender = Gender.getFromInt(rset.getInt("gender"));
 		status = UserStatus.getFromInt(rset.getInt("status"));
-		confirmationCode = rset.getLong("confirmation_code");
 		photos = PhotoManager.getInstance().findPhotosByOwner(name);
 		userPhoto = PhotoManager.getPhoto(PhotoId.getId(rset.getInt("photo")));
-		creationTime = rset.getLong("creation_time");
+
 	}
 	
 	/**
 	 * 
 	 */
 	public void writeOn(ResultSet rset) throws SQLException {
+		decorator.writeOn(rset);
+		
 		rset.updateInt("id", id);
 		rset.updateString("name", name);
 		rset.updateString("name_as_tag", nameAsTag);
