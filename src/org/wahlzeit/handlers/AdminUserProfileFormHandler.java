@@ -23,6 +23,8 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.*;
+import org.wahlzeit.model.clients.roles.AdministratorRole;
+import org.wahlzeit.model.clients.roles.ModeratorRole;
 import org.wahlzeit.model.clients.roles.RegisteredUserRole;
 import org.wahlzeit.services.*;
 import org.wahlzeit.utils.*;
@@ -34,6 +36,9 @@ import org.wahlzeit.webparts.*;
  *
  */
 public class AdminUserProfileFormHandler extends AbstractWebFormHandler {
+	
+	private static final String MODERATOR_KEY = "isModerator";
+	private static final String ADMINISTRATOR_KEY = "isAdministrator";
 	
 	/**
 	 *
@@ -57,7 +62,15 @@ public class AdminUserProfileFormHandler extends AbstractWebFormHandler {
 		part.maskAndAddString("userId", user.getName());
 		part.maskAndAddString(RegisteredUserRole.NAME, user.getName());
 		part.addSelect(RegisteredUserRole.STATUS, UserStatus.class, (String) args.get(RegisteredUserRole.STATUS));
-		part.addSelect(RegisteredUserRole.RIGHTS, AccessRights.class, (String) args.get(RegisteredUserRole.RIGHTS));
+
+		if (user.hasRole(ModeratorRole.class))	{		
+			part.addString(MODERATOR_KEY, HtmlUtil.CHECKBOX_CHECK);
+		}
+		
+		if (user.hasRole(AdministratorRole.class))	{		
+			part.addString(ADMINISTRATOR_KEY, HtmlUtil.CHECKBOX_CHECK);
+		}
+		
 		part.addSelect(RegisteredUserRole.GENDER, Gender.class, (String) args.get(RegisteredUserRole.GENDER));
 		part.addSelect(RegisteredUserRole.LANGUAGE, Language.class, (String) args.get(RegisteredUserRole.LANGUAGE));
 		part.maskAndAddStringFromArgsWithDefault(args, RegisteredUserRole.EMAIL_ADDRESS, user.getEmailAddress().asString());
@@ -77,7 +90,8 @@ public class AdminUserProfileFormHandler extends AbstractWebFormHandler {
 		RegisteredUserRole user = um.getUserByName(userId);
 		
 		String status = ctx.getAndSaveAsString(args, RegisteredUserRole.STATUS);
-		String rights = ctx.getAndSaveAsString(args, RegisteredUserRole.RIGHTS);
+		boolean isModerator = ctx.getAndSaveAsString(args, MODERATOR_KEY).equals("on");
+		boolean isAdministrator = ctx.getAndSaveAsString(args, ADMINISTRATOR_KEY).equals("on");
 		String gender = ctx.getAndSaveAsString(args, RegisteredUserRole.GENDER);
 		String language = ctx.getAndSaveAsString(args, RegisteredUserRole.LANGUAGE);
 		String emailAddress = ctx.getAndSaveAsString(args, RegisteredUserRole.EMAIL_ADDRESS);
@@ -93,7 +107,15 @@ public class AdminUserProfileFormHandler extends AbstractWebFormHandler {
 		}
 		
 		user.setStatus(UserStatus.getFromString(status));
-		user.setRights(AccessRights.getFromString(rights));
+		
+		if (isModerator)	{
+			user.addRole(new ModeratorRole(user.getClientCore()));
+		}
+		
+		if (isAdministrator)	{
+			user.addRole(new AdministratorRole(user.getClientCore()));
+		}
+		
 		user.setGender(Gender.getFromString(gender));
 		user.setLanguage(Language.getFromString(language));
 		user.setEmailAddress(EmailAddress.getFromString(emailAddress));

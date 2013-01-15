@@ -65,4 +65,8 @@ public abstract class ClientRole implements Client {
 	public void setEmailAddress(EmailAddress emailAddress) {
 		core.setEmailAddress(emailAddress);
 	}
+	
+	public ClientCore getClientCore()	{
+		return core;
+	}
 }

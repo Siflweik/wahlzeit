@@ -20,12 +20,8 @@
 			</td>
 			<td class="inline" align="right">Rechte:&nbsp;</td>
 			<td class="fiveCol5">
-				<select name="rights">
-					<option value="guest" {$guestAccessRightsSelected}>Gast</option>
-					<option value="user" {$userAccessRightsSelected}>Benutzer</option>
-					<option value="moderator" {$moderatorAccessRightsSelected}>Moderator</option>
-					<option value="administrator" {$administratorAccessRightsSelected}>Administrator</option>
-				</select>
+				<input type="checkbox" name="isModerator" {$isModerator} />
+				<input type="checkbox" name="isAdministrator" {$isAdministrator} />
 			</td>
 		</tr>
 		<tr>

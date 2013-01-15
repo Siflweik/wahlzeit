@@ -136,11 +136,12 @@ public class UserManager extends ObjectManager {
 		result.readFrom(rset);
 		
 		//For backward compatibility: admins are a subset of moderators
+		if (rights == AccessRights.ADMINISTRATOR || rights == AccessRights.MODERATOR)	{
+			result.addRole(new ModeratorRole(core));
+		}
+		
 		if (rights == AccessRights.ADMINISTRATOR)	{
 			result.addRole(new AdministratorRole(core));
-			result.addRole(new ModeratorRole(core));
-		} else if (rights == AccessRights.MODERATOR)	{
-			result.addRole(new ModeratorRole(core));
 		}
 
 		return result;
