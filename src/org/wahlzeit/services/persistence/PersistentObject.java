@@ -22,6 +22,8 @@ public abstract class PersistentObject implements Persistent {
 		return this;
 	}
 	
+	public static final String ID = "id";
+	
 	@Override
 	public synchronized boolean isDirty() {
 		return (writeCount > 0);

@@ -24,7 +24,18 @@ import java.sql.*;
 import java.net.*;
 
 import org.wahlzeit.services.*;
-import org.wahlzeit.utils.*;
+import org.wahlzeit.services.persistence.PersistentField;
+import org.wahlzeit.services.persistence.PersistentObject;
+import org.wahlzeit.services.persistence.serializers.EmailAddressSerializer;
+import org.wahlzeit.services.persistence.serializers.LanguageSerializer;
+import org.wahlzeit.services.persistence.serializers.PhotoIdSerializer;
+import org.wahlzeit.services.persistence.serializers.PhotoStatusSerializer;
+import org.wahlzeit.services.persistence.serializers.TagsSerializer;
+import org.wahlzeit.services.persistence.serializers.URLSerializer;
+import org.wahlzeit.services.persistence.serializers.basic.BooleanSerializer;
+import org.wahlzeit.services.persistence.serializers.basic.IntegerSerializer;
+import org.wahlzeit.services.persistence.serializers.basic.LongSerializer;
+import org.wahlzeit.services.persistence.serializers.basic.StringSerializer;
 
 /**
  * A photo represents a user-provided (uploaded) photo.
@@ -32,7 +43,7 @@ import org.wahlzeit.utils.*;
  * @author dirkriehle
  *
  */
-public class Photo extends DataObject {
+public class Photo extends PersistentObject {
 
 	/**
 	 * 
@@ -63,48 +74,69 @@ public class Photo extends DataObject {
 	/**
 	 * 
 	 */
+	@PersistentField(columnName = "id", serializerClass = PhotoIdSerializer.class)
 	protected PhotoId id = null;
 	
 	/**
 	 * 
 	 */
+	@PersistentField(columnName = "owner_id", serializerClass = IntegerSerializer.class)
 	protected int ownerId = 0;
+	
+	@PersistentField(columnName = "owner_name", serializerClass = StringSerializer.class)
 	protected String ownerName;
 
 	/**
 	 * 
 	 */
+	@PersistentField(columnName = "owner_notify_about_praise", serializerClass = BooleanSerializer.class)
 	protected boolean ownerNotifyAboutPraise = false;
+	
+	@PersistentField(columnName = "owner_email_address", serializerClass = EmailAddressSerializer.class)
 	protected EmailAddress ownerEmailAddress = EmailAddress.EMPTY;
+	
+	@PersistentField(columnName = "owner_language", serializerClass = LanguageSerializer.class)
 	protected Language ownerLanguage = Language.ENGLISH;
+	
+	@PersistentField(columnName = "owner_home_page", serializerClass = URLSerializer.class)
 	protected URL ownerHomePage;
 	
 	/**
 	 * 
 	 */
+	@PersistentField(columnName = "width", serializerClass = IntegerSerializer.class)
 	protected int width;
+	
+	@PersistentField(columnName = "height", serializerClass = IntegerSerializer.class)
 	protected int height;
+	
 	protected PhotoSize maxPhotoSize = PhotoSize.MEDIUM; // derived
 	
 	/**
 	 * 
 	 */
+	@PersistentField(columnName = "tags", serializerClass = TagsSerializer.class)
 	protected Tags tags = Tags.EMPTY_TAGS;
 
 	/**
 	 * 
 	 */
+	@PersistentField(columnName = "status", serializerClass = PhotoStatusSerializer.class)
 	protected PhotoStatus status = PhotoStatus.VISIBLE;
 	
 	/**
 	 * 
 	 */
+	@PersistentField(columnName = "praise_sum", serializerClass = IntegerSerializer.class)
 	protected int praiseSum = 10;
+	
+	@PersistentField(columnName = "no_votes", serializerClass = IntegerSerializer.class)
 	protected int noVotes = 1;
 	
 	/**
 	 * 
 	 */
+	@PersistentField(columnName = "creation_time", serializerClass = LongSerializer.class)
 	protected long creationTime = System.currentTimeMillis();
 	
 	/**
@@ -144,51 +176,13 @@ public class Photo extends DataObject {
 	/**
 	 * 
 	 */
+	@Override
 	public void readFrom(ResultSet rset) throws SQLException {
-		id = PhotoId.getId(rset.getInt("id"));
-
-		ownerId = rset.getInt("owner_id");
-		ownerName = rset.getString("owner_name");
+		super.readFrom(rset);
 		
-		ownerNotifyAboutPraise = rset.getBoolean("owner_notify_about_praise");
-		ownerEmailAddress = EmailAddress.getFromString(rset.getString("owner_email_address"));
-		ownerLanguage = Language.getFromInt(rset.getInt("owner_language"));
-		ownerHomePage = StringUtil.asUrl(rset.getString("owner_home_page"));
-
-		width = rset.getInt("width");
-		height = rset.getInt("height");
-
-		tags = new Tags(rset.getString("tags"));
-
-		status = PhotoStatus.getFromInt(rset.getInt("status"));
-		praiseSum = rset.getInt("praise_sum");
-		noVotes = rset.getInt("no_votes");
-
-		creationTime = rset.getLong("creation_time");
-
 		maxPhotoSize = PhotoSize.getFromWidthHeight(width, height);
 	}
 	
-	/**
-	 * 
-	 */
-	public void writeOn(ResultSet rset) throws SQLException {
-		rset.updateInt("id", id.asInt());
-		rset.updateInt("owner_id", ownerId);
-		rset.updateString("owner_name", ownerName);
-		rset.updateBoolean("owner_notify_about_praise", ownerNotifyAboutPraise);
-		rset.updateString("owner_email_address", ownerEmailAddress.asString());
-		rset.updateInt("owner_language", ownerLanguage.asInt());
-		rset.updateString("owner_home_page", ownerHomePage.toString());
-		rset.updateInt("width", width);
-		rset.updateInt("height", height);
-		rset.updateString("tags", tags.asString());
-		rset.updateInt("status", status.asInt());
-		rset.updateInt("praise_sum", praiseSum);
-		rset.updateInt("no_votes", noVotes);
-		rset.updateLong("creation_time", creationTime);		
-	}
-
 	/**
 	 * 
 	 */

@@ -21,6 +21,7 @@
 package org.wahlzeit.model;
 
 import org.wahlzeit.services.*;
+import org.wahlzeit.services.persistence.PersistentObject;
 
 /**
  * A case is a user complaint, most notably about an inappropriate photo.
@@ -29,7 +30,7 @@ import org.wahlzeit.services.*;
  * @author dirkriehle
  *
  */
-public abstract class Case extends DataObject {
+public abstract class Case extends PersistentObject {
 	
 	/**
 	 * 0 is never returned, first value is 1

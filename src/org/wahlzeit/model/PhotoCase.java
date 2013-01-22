@@ -22,6 +22,14 @@ package org.wahlzeit.model;
 
 import java.sql.*;
 
+import org.wahlzeit.services.persistence.PersistentField;
+import org.wahlzeit.services.persistence.serializers.CaseIdSerializer;
+import org.wahlzeit.services.persistence.serializers.FlagReasonSerializer;
+import org.wahlzeit.services.persistence.serializers.PhotoSerializer;
+import org.wahlzeit.services.persistence.serializers.basic.BooleanSerializer;
+import org.wahlzeit.services.persistence.serializers.basic.LongSerializer;
+import org.wahlzeit.services.persistence.serializers.basic.StringSerializer;
+
 
 /**
  * A photo case is a case where someone flagged a photo as inappropriate.
@@ -44,14 +52,30 @@ public class PhotoCase extends Case {
 	/**
 	 * 
 	 */
-	protected CaseId id = CaseId.NULL_ID; // case id
 	protected int applicationId = 0; // application id (unused on Java level)
+	
+	@PersistentField(columnName = "id", serializerClass = CaseIdSerializer.class)
+	protected CaseId id = CaseId.NULL_ID; // case id
+	
+	@PersistentField(columnName = "photo", serializerClass = PhotoSerializer.class)
 	protected Photo photo = null; // photo id -> photo
+	
+	@PersistentField(columnName = "flagger", serializerClass = StringSerializer.class)
 	protected String flagger = "unknown";
+	
+	@PersistentField(columnName = "reason", serializerClass = FlagReasonSerializer.class)
 	protected FlagReason reason = FlagReason.OTHER;
+	
+	@PersistentField(columnName = "explanation", serializerClass = StringSerializer.class)
 	protected String explanation = "none";	
+	
+	@PersistentField(columnName = "creation_time", serializerClass = LongSerializer.class)
 	protected long createdOn = System.currentTimeMillis();
+	
+	@PersistentField(columnName = "was_decided", serializerClass = BooleanSerializer.class)
 	protected boolean wasDecided = false;
+	
+	@PersistentField(columnName = "decision_time", serializerClass = LongSerializer.class)
 	protected long decidedOn = 0;
 	
 	/**
@@ -76,38 +100,6 @@ public class PhotoCase extends Case {
 	 */
 	public String getIdAsString() {
 		return String.valueOf(id);
-	}
-	
-	/**
-	 * 
-	 */
-	public void readFrom(ResultSet rset) throws SQLException {
-		id = new CaseId(rset.getInt("id"));
-		photo = PhotoManager.getPhoto(PhotoId.getId(rset.getInt("photo")));
-		createdOn = rset.getLong("creation_time");
-		
-		flagger = rset.getString("flagger");
-		reason = FlagReason.getFromInt(rset.getInt("reason"));
-		explanation = rset.getString("explanation");
-		
-		wasDecided = rset.getBoolean("was_decided");
-		decidedOn = rset.getLong("decision_time");
-	}
-	
-	/**
-	 * 
-	 */
-	public void writeOn(ResultSet rset) throws SQLException {
-		rset.updateInt("id", id.asInt());
-		rset.updateInt("photo", (photo == null) ? 0 : photo.getId().asInt());
-		rset.updateLong("creation_time", createdOn);
-		
-		rset.updateString("flagger", flagger);
-		rset.updateInt("reason", reason.asInt());
-		rset.updateString("explanation", explanation);
-		
-		rset.updateBoolean("was_decided", wasDecided);
-		rset.updateLong("decision_time", decidedOn);		
 	}
 	
 	/**
