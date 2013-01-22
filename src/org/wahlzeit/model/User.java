@@ -27,9 +27,15 @@ import java.sql.*;
 import org.wahlzeit.services.*;
 import org.wahlzeit.services.persistence.PersistentDecorator;
 import org.wahlzeit.services.persistence.PersistentField;
-import org.wahlzeit.services.persistence.serializers.IntegerSerializer;
-import org.wahlzeit.services.persistence.serializers.LongSerializer;
-import org.wahlzeit.services.persistence.serializers.StringSerializer;
+import org.wahlzeit.services.persistence.serializers.GenderSerializer;
+import org.wahlzeit.services.persistence.serializers.HomepageSerializer;
+import org.wahlzeit.services.persistence.serializers.LanguageSerializer;
+import org.wahlzeit.services.persistence.serializers.PhotoSerializer;
+import org.wahlzeit.services.persistence.serializers.UserStatusSerializer;
+import org.wahlzeit.services.persistence.serializers.basic.BooleanSerializer;
+import org.wahlzeit.services.persistence.serializers.basic.IntegerSerializer;
+import org.wahlzeit.services.persistence.serializers.basic.LongSerializer;
+import org.wahlzeit.services.persistence.serializers.basic.StringSerializer;
 import org.wahlzeit.utils.*;
 
 /**
@@ -107,29 +113,41 @@ public class User extends Client implements Persistent {
 	
 	@PersistentField(columnName = "name_as_tag", serializerClass = StringSerializer.class)
 	protected String nameAsTag;
+	
+	@PersistentField(columnName = "password", serializerClass = StringSerializer.class)
 	protected String password;
 	
-	/**
-	 * 
-	 */
-	protected Language language = Language.ENGLISH;
+	@PersistentField(columnName = "notify_about_praise", serializerClass = BooleanSerializer.class)
 	protected boolean notifyAboutPraise = true;
-	protected URL homePage = StringUtil.asUrl(SysConfig.getSiteUrlAsString());
-	protected Gender gender = Gender.UNDEFINED;
-	protected UserStatus status = UserStatus.CREATED;
-	protected long confirmationCode = 0; // 0 means doesn't need confirmation
 
-	/**
-	 * 
-	 */
-	protected Photo userPhoto = null;
-	protected Set<Photo> photos = new HashSet<Photo>();
+	@PersistentField(columnName = "confirmation_code", serializerClass = LongSerializer.class)
+	protected long confirmationCode = 0; // 0 means doesn't need confirmation
 	
 	/**
 	 * 
 	 */
+	@PersistentField(columnName = "language", serializerClass = LanguageSerializer.class)
+	protected Language language = Language.ENGLISH;
+	
+	@PersistentField(columnName = "home_page", serializerClass = HomepageSerializer.class)
+	protected URL homePage = StringUtil.asUrl(SysConfig.getSiteUrlAsString());
+	
+	@PersistentField(columnName = "gender", serializerClass = GenderSerializer.class)
+	protected Gender gender = Gender.UNDEFINED;
+	
+	@PersistentField(columnName = "status", serializerClass = UserStatusSerializer.class)
+	protected UserStatus status = UserStatus.CREATED;
+
+	@PersistentField(columnName = "photo", serializerClass = PhotoSerializer.class)
+	protected Photo userPhoto = null;
+
 	@PersistentField(columnName = "creation_time", serializerClass = LongSerializer.class)
 	protected long creationTime = System.currentTimeMillis();
+	
+	/**
+	 * 
+	 */	
+	protected Set<Photo> photos = new HashSet<Photo>();
 	
 	private PersistentDecorator decorator;
 	
@@ -225,24 +243,8 @@ public class User extends Client implements Persistent {
 	 */
 	public void readFrom(ResultSet rset) throws SQLException {
 		decorator.readFrom(rset);
-		
-		id = rset.getInt("id");
-		name = rset.getString("name");
-		nameAsTag = rset.getString("name_as_tag");
-		creationTime = rset.getLong("creation_time");
-		password = rset.getString("password");
-		notifyAboutPraise = rset.getBoolean("notify_about_praise");
-		confirmationCode = rset.getLong("confirmation_code");
 				
-		emailAddress = EmailAddress.getFromString(rset.getString("email_address"));
-		rights = AccessRights.getFromInt(rset.getInt("rights"));
-		language = Language.getFromInt(rset.getInt("language"));
-		homePage = StringUtil.asUrlOrDefault(rset.getString("home_page"), getDefaultHomePage());
-		gender = Gender.getFromInt(rset.getInt("gender"));
-		status = UserStatus.getFromInt(rset.getInt("status"));
 		photos = PhotoManager.getInstance().findPhotosByOwner(name);
-		userPhoto = PhotoManager.getPhoto(PhotoId.getId(rset.getInt("photo")));
-
 	}
 	
 	/**
@@ -250,21 +252,6 @@ public class User extends Client implements Persistent {
 	 */
 	public void writeOn(ResultSet rset) throws SQLException {
 		decorator.writeOn(rset);
-		
-		rset.updateInt("id", id);
-		rset.updateString("name", name);
-		rset.updateString("name_as_tag", nameAsTag);
-		rset.updateString("email_address", (emailAddress == null) ? "" : emailAddress.asString());
-		rset.updateString("password", password);
-		rset.updateInt("rights", rights.asInt());
-		rset.updateInt("language", language.asInt());
-		rset.updateBoolean("notify_about_praise", notifyAboutPraise);
-		rset.updateString("home_page", homePage.toString());
-		rset.updateInt("gender", gender.asInt());
-		rset.updateInt("status", status.asInt());
-		rset.updateLong("confirmation_code", confirmationCode);
-		rset.updateInt("photo", (userPhoto == null) ? 0 : userPhoto.getId().asInt());
-		rset.updateLong("creation_time", creationTime);
 	}
 
 	/**

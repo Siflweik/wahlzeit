@@ -7,12 +7,13 @@ import java.util.HashMap;
 
 import org.wahlzeit.services.Persistent;
 
+// This class enables persistent storage of its members via reflection
 public abstract class PersistentObject implements Persistent {
 	private long writeCount;
-	private HashMap<String, Serializer> serializers;
+	private HashMap<String, Serializer<?, ?>> serializers;
 	
 	protected PersistentObject()	{
-		serializers = new HashMap<String, Serializer>();
+		serializers = new HashMap<String, Serializer<?, ?>>();
 		
 		resetWriteCount();
 	}
@@ -37,7 +38,6 @@ public abstract class PersistentObject implements Persistent {
 	}
 
 	//TODO: implement visitor pattern to reduce code duplication? Java definitely needs delegates :|
-	//TODO: is there a solution with templates? Type erasure is a b*tch
 	
 	@Override
 	public synchronized void readFrom(ResultSet rset) throws SQLException {
@@ -49,7 +49,7 @@ public abstract class PersistentObject implements Persistent {
 
 			if (attr != null)	{
 				try {
-					Serializer serializer = getSerializerForField(field, attr.serializerClass());
+					Serializer<Object, ?> serializer = getSerializerForField(field, attr.serializerClass());
 					field.set(object, serializer.readFrom(rset, attr.columnName()));
 				} catch (Exception e) {
 				}
@@ -67,7 +67,7 @@ public abstract class PersistentObject implements Persistent {
 
 			if (attr != null)	{
 				try {
-					Serializer serializer = getSerializerForField(field, attr.serializerClass());
+					Serializer<Object, ?> serializer = getSerializerForField(field, attr.serializerClass());
 					serializer.writeOn(rset, attr.columnName(), field.get(object));
 				} catch (Exception e) {
 				}
@@ -75,31 +75,26 @@ public abstract class PersistentObject implements Persistent {
 		}
 	}
 	
-	protected synchronized Serializer getSerializerForField(Field field, Class<? extends Serializer> serializerClass)	{
-		Serializer serializer = createSerializer(serializerClass);		
-
-		// Add decorator, if necessary
-		PersistentConvertableField attr = field.getAnnotation(PersistentConvertableField.class);		
-		if (attr != null)	{
-			Converter converter = (Converter)createSerializer(attr.converterClass());
-			converter.setSerializer(serializer);
-			serializer = converter;
-		}
-		
-		return serializer;
-	}
-	
-	protected synchronized Serializer createSerializer(Class<? extends Serializer> serializerClass)	{
+	// I hate generics in java: type erasure is a b*tch - or maybe i'm just stupid?
+	@SuppressWarnings("unchecked")
+	protected synchronized Serializer<Object, Object> getSerializerForField(Field field, Class<? extends Serializer<?, ?>> serializerClass)	{
 		String key = serializerClass.getName();
 		
-		if (!serializers.containsKey(key))	{
+		Serializer<Object, Object> serializer = null;
+		
+		if (serializers.containsKey(key))	{
+			serializer = (Serializer<Object, Object>)serializers.get(key);
+		} else	{
 			try {
-				serializers.put(key, serializerClass.newInstance());
+				serializer = (Serializer<Object, Object>)serializerClass.newInstance();
+				serializer.setOwner(this);
+				
+				serializers.put(key, serializer);
 			} catch (Exception e) {
 				//TODO error handling, otherwise there will be a NPE upon access
 			}
 		}
 		
-		return serializers.get(key);
+		return serializer;
 	}
 }

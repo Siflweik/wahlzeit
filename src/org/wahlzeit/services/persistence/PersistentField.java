@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PersistentField {
 	String columnName();
-	Class<? extends Serializer> serializerClass();
+	Class<? extends Serializer<?,?>> serializerClass();
 }

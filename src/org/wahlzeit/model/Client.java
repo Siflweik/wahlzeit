@@ -21,6 +21,9 @@
 package org.wahlzeit.model;
 
 import org.wahlzeit.services.*;
+import org.wahlzeit.services.persistence.PersistentField;
+import org.wahlzeit.services.persistence.serializers.AccessRightsSerializer;
+import org.wahlzeit.services.persistence.serializers.EmailAddressSerializer;
 
 /**
  * A Client uses the system. It is an abstract superclass.
@@ -34,11 +37,13 @@ public abstract class Client {
 	/**
 	 * 
 	 */
+	@PersistentField(columnName = "rights", serializerClass = AccessRightsSerializer.class)
 	protected AccessRights rights = AccessRights.NONE;
 	
 	/**
 	 * 
 	 */
+	@PersistentField(columnName = "email_address", serializerClass = EmailAddressSerializer.class)
 	protected EmailAddress emailAddress = EmailAddress.EMPTY;
 	
 	/**
