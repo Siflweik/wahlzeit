@@ -22,6 +22,7 @@ package org.wahlzeit.model;
 
 import java.util.*;
 
+import org.wahlzeit.services.SysLog;
 import org.wahlzeit.utils.StringUtil;
 
 /**
@@ -130,13 +131,17 @@ public class PhotoFilter {
 	 * 
 	 */
 	public PhotoId getRandomDisplayablePhotoId() {
-		if (!displayablePhotoIds.isEmpty()) {
-			int size = displayablePhotoIds.size();
-			int index = ((randomNumber.nextInt() % size) + size) / 2;
-			return displayablePhotoIds.get(index);
-		} else {
-			return PhotoId.NULL_ID;
+		try	{
+			if (!displayablePhotoIds.isEmpty()) {
+				int size = displayablePhotoIds.size();
+				int index = ((randomNumber.nextInt() % size) + size) / 2;
+				return displayablePhotoIds.get(index);
+			}
+		} catch (Exception ex)	{
+			SysLog.logThrowable(ex);
 		}
+			
+		return PhotoId.NULL_ID;
 	}
 
 	/**
