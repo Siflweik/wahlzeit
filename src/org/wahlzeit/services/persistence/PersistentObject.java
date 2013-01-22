@@ -44,16 +44,19 @@ public abstract class PersistentObject implements Persistent {
 	@Override
 	public synchronized void readFrom(ResultSet rset) throws SQLException {
 		Persistent object = getPersistent();
-		Field[] fields = object.getClass().getFields();
+		Field[] fields = object.getClass().getDeclaredFields();
 		
 		for (Field field : fields) {
 			PersistentField attr = field.getAnnotation(PersistentField.class);
-
+			
 			if (attr != null)	{
 				try {
 					Serializer<Object, ?> serializer = getSerializerForField(field, attr.serializerClass());
+
+					field.setAccessible(true);
 					field.set(object, serializer.readFrom(rset, attr.columnName()));
 				} catch (Exception e) {
+					System.out.println("[EX] cannot set field '" + field.getName() + "': (" + e.getClass().getName() + ") " + e.getMessage());
 				}
 			}
 		}
@@ -62,7 +65,7 @@ public abstract class PersistentObject implements Persistent {
 	@Override
 	public synchronized void writeOn(ResultSet rset) throws SQLException {
 		Persistent object = getPersistent();
-		Field[] fields = object.getClass().getFields();
+		Field[] fields = object.getClass().getDeclaredFields();
 		
 		for (Field field : fields) {
 			PersistentField attr = field.getAnnotation(PersistentField.class);
@@ -70,6 +73,9 @@ public abstract class PersistentObject implements Persistent {
 			if (attr != null)	{
 				try {
 					Serializer<Object, ?> serializer = getSerializerForField(field, attr.serializerClass());
+
+					field.setAccessible(true);
+					
 					serializer.writeOn(rset, attr.columnName(), field.get(object));
 				} catch (Exception e) {
 				}
