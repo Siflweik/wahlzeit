@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 
 import org.wahlzeit.services.Persistent;
+import org.wahlzeit.services.SysLog;
 
 // This class enables persistent storage of its members via reflection
 public abstract class PersistentObject implements Persistent {
@@ -51,12 +52,12 @@ public abstract class PersistentObject implements Persistent {
 			
 			if (attr != null)	{
 				try {
-					Serializer<Object, ?> serializer = getSerializerForField(field, attr.serializerClass());
+					Serializer<Object, ?> serializer = getSerializer(attr.serializerClass());
 
 					field.setAccessible(true);
 					field.set(object, serializer.readFrom(rset, attr.columnName()));
 				} catch (Exception e) {
-					System.out.println("[EX] cannot set field '" + field.getName() + "': (" + e.getClass().getName() + ") " + e.getMessage());
+					SysLog.logError(String.format("PersistentObject: cannot set field '%s': (%s) %s", field.getName(), e.getClass().getName(), e.getMessage()));
 				}
 			}
 		}
@@ -72,12 +73,13 @@ public abstract class PersistentObject implements Persistent {
 
 			if (attr != null)	{
 				try {
-					Serializer<Object, ?> serializer = getSerializerForField(field, attr.serializerClass());
+					Serializer<Object, ?> serializer = getSerializer(attr.serializerClass());
 
 					field.setAccessible(true);
 					
 					serializer.writeOn(rset, attr.columnName(), field.get(object));
 				} catch (Exception e) {
+					SysLog.logError(String.format("PersistentObject: cannot serialize field '%s': (%s) %s", field.getName(), e.getClass().getName(), e.getMessage()));
 				}
 			}
 		}
@@ -85,7 +87,7 @@ public abstract class PersistentObject implements Persistent {
 	
 	// I hate generics in java: type erasure is a b*tch - or maybe i'm just stupid?
 	@SuppressWarnings("unchecked")
-	protected synchronized Serializer<Object, Object> getSerializerForField(Field field, Class<? extends Serializer<?, ?>> serializerClass)	{
+	protected synchronized Serializer<Object, Object> getSerializer(Class<? extends Serializer<?, ?>> serializerClass)	{
 		String key = serializerClass.getName();
 		
 		Serializer<Object, Object> serializer = null;
@@ -99,7 +101,7 @@ public abstract class PersistentObject implements Persistent {
 				
 				serializers.put(key, serializer);
 			} catch (Exception e) {
-				//TODO error handling, otherwise there will be a NPE upon access
+				SysLog.logError(String.format("PersistentObject: cannot load serializer for class '%s': (%s) %s", serializerClass.getName(), e.getClass().getName(), e.getMessage()));
 			}
 		}
 		
