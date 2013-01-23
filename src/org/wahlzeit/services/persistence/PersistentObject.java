@@ -95,7 +95,7 @@ public abstract class PersistentObject implements Persistent {
 		} else	{
 			try {
 				serializer = (Serializer<Object, Object>)serializerClass.newInstance();
-				serializer.setOwner(this);
+				serializer.setOwner(getPersistent());
 				
 				serializers.put(key, serializer);
 			} catch (Exception e) {
