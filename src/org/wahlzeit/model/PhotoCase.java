@@ -67,7 +67,7 @@ public class PhotoCase extends Case {
 	/**
 	 * 
 	 */
-	public PhotoCase(ResultSet rset) throws SQLException {
+	public PhotoCase(ResultSet rset) throws ReadWriteException {
 		readFrom(rset);
 	}
 	
@@ -81,40 +81,53 @@ public class PhotoCase extends Case {
 	/**
 	 * 
 	 */
-	public void readFrom(ResultSet rset) throws SQLException {
-		id = new CaseId(rset.getInt("id"));
-		photo = PhotoManager.getPhoto(PhotoId.getId(rset.getInt("photo")));
-		createdOn = rset.getLong("creation_time");
-		
-		flagger = rset.getString("flagger");
-		reason = FlagReason.getFromInt(rset.getInt("reason"));
-		explanation = rset.getString("explanation");
-		
-		wasDecided = rset.getBoolean("was_decided");
-		decidedOn = rset.getLong("decision_time");
+	public void readFrom(ResultSet rset) throws ReadWriteException {
+		try	{
+			id = new CaseId(rset.getInt("id"));
+    		photo = PhotoManager.getPhoto(PhotoId.getId(rset.getInt("photo")));
+    		createdOn = rset.getLong("creation_time");
+    		
+    		flagger = rset.getString("flagger");
+    		reason = FlagReason.getFromInt(rset.getInt("reason"));
+    		explanation = rset.getString("explanation");
+    		
+    		wasDecided = rset.getBoolean("was_decided");
+    		decidedOn = rset.getLong("decision_time");
+		} catch (SQLException e) {
+			handleSQLException(e);
+		} catch (PhotoException e)	{
+		}
 	}
 	
 	/**
 	 * 
 	 */
-	public void writeOn(ResultSet rset) throws SQLException {
-		rset.updateInt("id", id.asInt());
-		rset.updateInt("photo", (photo == null) ? 0 : photo.getId().asInt());
-		rset.updateLong("creation_time", createdOn);
-		
-		rset.updateString("flagger", flagger);
-		rset.updateInt("reason", reason.asInt());
-		rset.updateString("explanation", explanation);
-		
-		rset.updateBoolean("was_decided", wasDecided);
-		rset.updateLong("decision_time", decidedOn);		
+	public void writeOn(ResultSet rset) throws ReadWriteException {
+		try {
+			rset.updateInt("id", id.asInt());
+    		rset.updateInt("photo", (photo == null) ? 0 : photo.getId().asInt());
+    		rset.updateLong("creation_time", createdOn);
+    		
+    		rset.updateString("flagger", flagger);
+    		rset.updateInt("reason", reason.asInt());
+    		rset.updateString("explanation", explanation);
+    		
+    		rset.updateBoolean("was_decided", wasDecided);
+    		rset.updateLong("decision_time", decidedOn);		
+		} catch (SQLException e) {
+			handleSQLException(e);
+		}
 	}
 	
 	/**
 	 * 
 	 */
-	public void writeId(PreparedStatement stmt, int pos) throws SQLException {
-		stmt.setInt(pos, id.asInt());
+	public void writeId(PreparedStatement stmt, int pos) throws ReadWriteException {
+		try {
+			stmt.setInt(pos, id.asInt());
+		} catch (SQLException e) {
+			handleSQLException(e);
+		}
 	}
 	
 	/**

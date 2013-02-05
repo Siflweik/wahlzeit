@@ -137,7 +137,7 @@ public class User extends Client implements Persistent {
 	/**
 	 * 
 	 */
-	public User(ResultSet rset) throws SQLException {
+	public User(ResultSet rset) throws ReadWriteException {
 		readFrom(rset);
 	}
 	
@@ -206,49 +206,69 @@ public class User extends Client implements Persistent {
 	 * 
 	 * @methodtype command
 	 */
-	public void readFrom(ResultSet rset) throws SQLException {
-		id = rset.getInt("id");
-		name = rset.getString("name");
-		nameAsTag = rset.getString("name_as_tag");
-		emailAddress = EmailAddress.getFromString(rset.getString("email_address"));
-		password = rset.getString("password");
-		rights = AccessRights.getFromInt(rset.getInt("rights"));
-		language = Language.getFromInt(rset.getInt("language"));
-		notifyAboutPraise = rset.getBoolean("notify_about_praise");
-		homePage = StringUtil.asUrlOrDefault(rset.getString("home_page"), getDefaultHomePage());
-		gender = Gender.getFromInt(rset.getInt("gender"));
-		status = UserStatus.getFromInt(rset.getInt("status"));
-		confirmationCode = rset.getLong("confirmation_code");
-		photos = PhotoManager.getInstance().findPhotosByOwner(name);
-		userPhoto = PhotoManager.getPhoto(PhotoId.getId(rset.getInt("photo")));
-		creationTime = rset.getLong("creation_time");
+	public void readFrom(ResultSet rset) throws ReadWriteException {
+		photos.clear();
+				
+		try	{
+			id = rset.getInt("id");
+			name = rset.getString("name");
+    		nameAsTag = rset.getString("name_as_tag");
+    		emailAddress = EmailAddress.getFromString(rset.getString("email_address"));
+    		password = rset.getString("password");
+    		rights = AccessRights.getFromInt(rset.getInt("rights"));
+    		language = Language.getFromInt(rset.getInt("language"));
+    		notifyAboutPraise = rset.getBoolean("notify_about_praise");
+    		homePage = StringUtil.asUrlOrDefault(rset.getString("home_page"), getDefaultHomePage());
+    		gender = Gender.getFromInt(rset.getInt("gender"));
+    		status = UserStatus.getFromInt(rset.getInt("status"));
+    		confirmationCode = rset.getLong("confirmation_code");
+    		photos = PhotoManager.getInstance().findPhotosByOwner(name);
+    		userPhoto = PhotoManager.getPhoto(PhotoId.getId(rset.getInt("photo")));
+    		creationTime = rset.getLong("creation_time");
+		} catch (SQLException ex)	{
+			handleSQLException(ex);
+		} catch (PhotoException e)	{
+			SysLog.logThrowable(e);
+		}
 	}
 	
 	/**
 	 * 
 	 */
-	public void writeOn(ResultSet rset) throws SQLException {
-		rset.updateInt("id", id);
-		rset.updateString("name", name);
-		rset.updateString("name_as_tag", nameAsTag);
-		rset.updateString("email_address", (emailAddress == null) ? "" : emailAddress.asString());
-		rset.updateString("password", password);
-		rset.updateInt("rights", rights.asInt());
-		rset.updateInt("language", language.asInt());
-		rset.updateBoolean("notify_about_praise", notifyAboutPraise);
-		rset.updateString("home_page", homePage.toString());
-		rset.updateInt("gender", gender.asInt());
-		rset.updateInt("status", status.asInt());
-		rset.updateLong("confirmation_code", confirmationCode);
-		rset.updateInt("photo", (userPhoto == null) ? 0 : userPhoto.getId().asInt());
-		rset.updateLong("creation_time", creationTime);
+	public void writeOn(ResultSet rset) throws ReadWriteException {
+		try	{
+    		rset.updateInt("id", id);
+    		rset.updateString("name", name);
+    		rset.updateString("name_as_tag", nameAsTag);
+    		rset.updateString("email_address", (emailAddress == null) ? "" : emailAddress.asString());
+    		rset.updateString("password", password);
+    		rset.updateInt("rights", rights.asInt());
+    		rset.updateInt("language", language.asInt());
+    		rset.updateBoolean("notify_about_praise", notifyAboutPraise);
+    		rset.updateString("home_page", homePage.toString());
+    		rset.updateInt("gender", gender.asInt());
+    		rset.updateInt("status", status.asInt());
+    		rset.updateLong("confirmation_code", confirmationCode);
+    		rset.updateInt("photo", (userPhoto == null) ? 0 : userPhoto.getId().asInt());
+    		rset.updateLong("creation_time", creationTime);
+		} catch (SQLException e) {
+			handleSQLException(e);
+		}
+	}
+
+	private void handleSQLException(SQLException e) throws ReadWriteException {
+		throw new ReadWriteException(e);
 	}
 
 	/**
 	 * 
 	 */
-	public void writeId(PreparedStatement stmt, int pos) throws SQLException {
-		stmt.setInt(pos, id);
+	public void writeId(PreparedStatement stmt, int pos) throws ReadWriteException {
+		try {
+			stmt.setInt(pos, id);
+		} catch (SQLException e) {
+			handleSQLException(e);
+		}
 	}
 	
 	/**

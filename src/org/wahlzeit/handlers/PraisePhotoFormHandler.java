@@ -27,6 +27,7 @@ import org.wahlzeit.agents.AgentManager;
 import org.wahlzeit.agents.NotifyAboutPraiseAgent;
 import org.wahlzeit.model.AccessRights;
 import org.wahlzeit.model.Photo;
+import org.wahlzeit.model.PhotoException;
 import org.wahlzeit.model.PhotoManager;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserSession;
@@ -65,7 +66,13 @@ public class PraisePhotoFormHandler extends AbstractWebFormHandler {
 	 */
 	protected boolean isWellFormedPost(UserSession ctx, Map args) {
 		String photoId = ctx.getAsString(args, Photo.ID);
-		Photo photo = PhotoManager.getPhoto(photoId);
+		Photo photo = null;
+		
+		try {
+			photo = PhotoManager.getPhoto(photoId);
+		} catch (PhotoException e) {
+		}
+		
 		return photo != null;
 	}
 	
@@ -74,28 +81,33 @@ public class PraisePhotoFormHandler extends AbstractWebFormHandler {
 	 */
 	protected String doHandlePost(UserSession ctx, Map args) {
 		String photoId = ctx.getAsString(args, Photo.ID);
-		Photo photo = PhotoManager.getPhoto(photoId);
-		String praise = ctx.getAsString(args, Photo.PRAISE);
 
-		boolean wasPraised = false;
-		if (!StringUtil.isNullOrEmptyString(praise)) {
-			if (!ctx.hasPraisedPhoto(photo)) {
-				int value = Integer.parseInt(praise);
-				photo.addToPraise(value);
-				ctx.addPraisedPhoto(photo);
-				wasPraised = true;
-				if (photo.getOwnerNotifyAboutPraise()) {
-					Agent agent = AgentManager.getInstance().getAgent(NotifyAboutPraiseAgent.NAME);
-					NotifyAboutPraiseAgent notify = (NotifyAboutPraiseAgent) agent; 
-					notify.addForNotify(photo);
+		try {
+			Photo photo = PhotoManager.getPhoto(photoId);
+		
+			String praise = ctx.getAsString(args, Photo.PRAISE);
+
+			boolean wasPraised = false;
+			if (!StringUtil.isNullOrEmptyString(praise)) {
+				if (!ctx.hasPraisedPhoto(photo)) {
+					int value = Integer.parseInt(praise);
+					photo.addToPraise(value);
+					ctx.addPraisedPhoto(photo);
+					wasPraised = true;
+					if (photo.getOwnerNotifyAboutPraise()) {
+						Agent agent = AgentManager.getInstance().getAgent(NotifyAboutPraiseAgent.NAME);
+						NotifyAboutPraiseAgent notify = (NotifyAboutPraiseAgent) agent; 
+						notify.addForNotify(photo);
+					}
 				}
 			}
-		}
-		
-		ctx.setPriorPhoto(photo);
+			
+			ctx.setPriorPhoto(photo);
 
-		UserLog.logPerformedAction(wasPraised ? "PraisePhoto" : "SkipPhoto");
-		
+			UserLog.logPerformedAction(wasPraised ? "PraisePhoto" : "SkipPhoto");
+		} catch (PhotoException e) {
+		}
+				
 		return PartUtil.SHOW_PHOTO_PAGE_NAME;
 	}
 	

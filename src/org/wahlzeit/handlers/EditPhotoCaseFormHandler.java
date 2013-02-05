@@ -27,6 +27,7 @@ import org.wahlzeit.model.Photo;
 import org.wahlzeit.model.PhotoCase;
 import org.wahlzeit.model.PhotoCaseManager;
 import org.wahlzeit.model.PhotoStatus;
+import org.wahlzeit.model.ReadWriteException;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserSession;
 import org.wahlzeit.services.SysConfig;
@@ -84,29 +85,35 @@ public class EditPhotoCaseFormHandler extends AbstractWebFormHandler {
 		String id = ctx.getAndSaveAsString(args, PhotoCase.ID);
 		PhotoCaseManager pcm = PhotoCaseManager.getInstance();
 		
-		PhotoCase photoCase = pcm.getPhotoCase(Integer.parseInt(id));
-		Photo photo = photoCase.getPhoto();
-		PhotoStatus status = photo.getStatus();
-		if (ctx.isFormType(args, "unflag")) {
-			status = status.asFlagged(false);
-		} else if (ctx.isFormType(args, "moderate")) {
-			status = status.asModerated(true);
-		} else { // something wrong?
-			return PartUtil.SHOW_PHOTO_CASES_PAGE_NAME;
-		}
-
-		photo.setStatus(status);
-
-		StringBuffer sb = UserLog.createActionEntry("EditPhotoCase");
-		UserLog.addUpdatedObject(sb, "Photo", photo.getId().asString());
-		UserLog.log(sb);
-
-		photoCase.setDecided();
-		pcm.removePhotoCase(photoCase);
+		PhotoCase photoCase;
 		
-		sb = UserLog.createActionEntry("EditPhotoCase");
-		UserLog.addUpdatedObject(sb, "PhotoCase", String.valueOf(photoCase.getId()));
-		UserLog.log(sb);
+		try {
+			photoCase = pcm.getPhotoCase(Integer.parseInt(id));
+			
+			Photo photo = photoCase.getPhoto();
+			PhotoStatus status = photo.getStatus();
+			if (ctx.isFormType(args, "unflag")) {
+				status = status.asFlagged(false);
+			} else if (ctx.isFormType(args, "moderate")) {
+				status = status.asModerated(true);
+			} else { // something wrong?
+				return PartUtil.SHOW_PHOTO_CASES_PAGE_NAME;
+			}
+
+			photo.setStatus(status);
+
+			StringBuffer sb = UserLog.createActionEntry("EditPhotoCase");
+			UserLog.addUpdatedObject(sb, "Photo", photo.getId().asString());
+			UserLog.log(sb);
+
+			photoCase.setDecided();
+			pcm.removePhotoCase(photoCase);
+			
+			sb = UserLog.createActionEntry("EditPhotoCase");
+			UserLog.addUpdatedObject(sb, "PhotoCase", String.valueOf(photoCase.getId()));
+			UserLog.log(sb);
+		} catch (NumberFormatException | ReadWriteException e) {
+		}
 
 		return PartUtil.SHOW_PHOTO_CASES_PAGE_NAME;
 	}

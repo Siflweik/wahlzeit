@@ -69,14 +69,14 @@ public class ShowAdminPageHandler extends AbstractWebPageHandler implements WebF
 		WebFormHandler handler = getFormHandler(PartUtil.NULL_FORM_NAME);
 
 		String userId = ctx.getSavedArg("userId").toString();
-		User user = UserManager.getInstance().getUserByName(userId);
+		User user = getUser(userId);
 		if (user != null) {
 			handler = getFormHandler(PartUtil.ADMIN_USER_PROFILE_FORM_NAME);
 		}
 		
 		return handler.makeWebPart(ctx);
 	}
-
+	
 	/**
 	 * 
 	 */
@@ -84,7 +84,7 @@ public class ShowAdminPageHandler extends AbstractWebPageHandler implements WebF
 		WebFormHandler handler = getFormHandler(PartUtil.NULL_FORM_NAME);
 
 		String photoId = ctx.getSavedArg("photoId").toString();
-		Photo photo = PhotoManager.getPhoto(photoId);
+		Photo photo = getPhoto(photoId);
 		if (photo != null) {
 			handler = getFormHandler(PartUtil.ADMIN_USER_PHOTO_FORM_NAME);
 		}
@@ -121,7 +121,7 @@ public class ShowAdminPageHandler extends AbstractWebPageHandler implements WebF
 	 */
 	protected String performAdminUserProfileRequest(UserSession ctx, Map args) {
 		String userId = ctx.getAndSaveAsString(args, "userId");
-		User user = UserManager.getInstance().getUserByName(userId);
+		User user = getUser(userId);
 		if (user == null) {
 			ctx.setMessage(ctx.cfg().getUserNameIsUnknown());
 		}
@@ -134,7 +134,7 @@ public class ShowAdminPageHandler extends AbstractWebPageHandler implements WebF
 	 */
 	protected String performAdminUserPhotoRequest(UserSession ctx, Map args) {
 		String photoId = ctx.getAndSaveAsString(args, "photoId");
-		Photo photo = PhotoManager.getPhoto(photoId);
+		Photo photo = getPhoto(photoId);
 		if (photo == null) {
 			ctx.setMessage(ctx.cfg().getPhotoIsUnknown());
 		}

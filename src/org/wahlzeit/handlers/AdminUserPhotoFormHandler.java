@@ -46,14 +46,22 @@ public class AdminUserPhotoFormHandler extends AbstractWebFormHandler {
 		Map<String, Object> args = ctx.getSavedArgs();
 
 		String photoId = ctx.getAndSaveAsString(args, "photoId");
+		String otherPhotoId = photoId;
+		String tags = "";
+		
+		try	{
+			Photo photo = PhotoManager.getPhoto(photoId);
+			part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));
 
-		Photo photo = PhotoManager.getPhoto(photoId);
-		part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));
-
+			otherPhotoId =  photo.getId().asString();
+			tags = photo.getTags().asString();
+		} catch (PhotoException ex)	{
+		}
+		
 		part.addString("photoId", photoId);
-		part.addString(Photo.ID, photo.getId().asString());
+		part.addString(Photo.ID, otherPhotoId);
 		part.addSelect(Photo.STATUS, PhotoStatus.class, (String) args.get(Photo.STATUS));
-		part.maskAndAddStringFromArgsWithDefault(args, Photo.TAGS, photo.getTags().asString());
+		part.maskAndAddStringFromArgsWithDefault(args, Photo.TAGS, tags);
 	}
 	
 	/**
@@ -61,22 +69,27 @@ public class AdminUserPhotoFormHandler extends AbstractWebFormHandler {
 	 */
 	protected String doHandlePost(UserSession ctx, Map args) {
 		String id = ctx.getAndSaveAsString(args, "photoId");
-		Photo photo = PhotoManager.getPhoto(id);
+
+		try {
+			Photo photo = PhotoManager.getPhoto(id);
 	
-		String tags = ctx.getAndSaveAsString(args, Photo.TAGS);
-		photo.setTags(new Tags(tags));
-		String status = ctx.getAndSaveAsString(args, Photo.STATUS);
-		photo.setStatus(PhotoStatus.getFromString(status));
-
-		PhotoManager pm = PhotoManager.getInstance();
-		pm.savePhoto(photo);
-		
-		StringBuffer sb = UserLog.createActionEntry("AdminUserPhoto");
-		UserLog.addUpdatedObject(sb, "Photo", photo.getId().asString());
-		UserLog.log(sb);
-		
-		ctx.setMessage(ctx.cfg().getPhotoUpdateSucceeded());
-
+    		String tags = ctx.getAndSaveAsString(args, Photo.TAGS);
+    		photo.setTags(new Tags(tags));
+    		String status = ctx.getAndSaveAsString(args, Photo.STATUS);
+    		photo.setStatus(PhotoStatus.getFromString(status));
+    
+    		PhotoManager pm = PhotoManager.getInstance();
+    		pm.savePhoto(photo);
+    		
+    		StringBuffer sb = UserLog.createActionEntry("AdminUserPhoto");
+    		UserLog.addUpdatedObject(sb, "Photo", photo.getId().asString());
+    		UserLog.log(sb);
+    		
+    		ctx.setMessage(ctx.cfg().getPhotoUpdateSucceeded());
+		} catch (PhotoException e) {
+			ctx.cfg().getPhotoUploadFailed();
+		}
+				
 		return PartUtil.SHOW_ADMIN_PAGE_NAME;
 	}
 	

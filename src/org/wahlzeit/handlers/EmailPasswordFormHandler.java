@@ -61,22 +61,36 @@ public class EmailPasswordFormHandler extends AbstractWebFormHandler {
 		if (StringUtil.isNullOrEmptyString(userName)) {
 			ctx.setMessage(ctx.cfg().getFieldIsMissing());
 			return PartUtil.EMAIL_PASSWORD_PAGE_NAME;
-		} else if (!userManager.hasUserByName(userName)) {
-			ctx.setMessage(ctx.cfg().getUserNameIsUnknown());
-			return PartUtil.EMAIL_PASSWORD_PAGE_NAME;
+		} else {
+			boolean hasUser = false;
+			
+			try {
+				hasUser = userManager.hasUserByName(userName);
+			} catch (ReadWriteException e) {
+			}
+			
+			if (!hasUser) {
+				ctx.setMessage(ctx.cfg().getUserNameIsUnknown());
+				return PartUtil.EMAIL_PASSWORD_PAGE_NAME;
+			}
 		}
-		
-		User user = userManager.getUserByName(userName);
-		
-		EmailAddress from = ctx.cfg().getModeratorEmailAddress();
-		EmailAddress to = user.getEmailAddress();
+			
+		try {
+			User user = userManager.getUserByName(userName);
+			
+			EmailAddress from = ctx.cfg().getModeratorEmailAddress();
+			EmailAddress to = user.getEmailAddress();
 
-		EmailService emailService = EmailServiceManager.getDefaultService();
-		emailService.sendEmailIgnoreException(from, to, ctx.cfg().getAuditEmailAddress(), ctx.cfg().getSendPasswordEmailSubject(), user.getPassword());
+			EmailService emailService = EmailServiceManager.getDefaultService();
+			emailService.sendEmailIgnoreException(from, to, ctx.cfg().getAuditEmailAddress(), ctx.cfg().getSendPasswordEmailSubject(), user.getPassword());
 
-		UserLog.logPerformedAction("EmailPassword");
-		
-		ctx.setTwoLineMessage(ctx.cfg().getPasswordWasEmailed(), ctx.cfg().getContinueWithShowPhoto());
+			UserLog.logPerformedAction("EmailPassword");
+			
+			ctx.setTwoLineMessage(ctx.cfg().getPasswordWasEmailed(), ctx.cfg().getContinueWithShowPhoto());
+		} catch (ReadWriteException e) {
+			ctx.setTwoLineMessage(ctx.cfg().getPasswordEmailFailed(), ctx.cfg().getContinueWithShowPhoto());
+		}
+
 
 		return PartUtil.SHOW_NOTE_PAGE_NAME;
 	}

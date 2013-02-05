@@ -23,6 +23,7 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.AccessRights;
+import org.wahlzeit.model.ReadWriteException;
 import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserManager;
@@ -76,13 +77,31 @@ public class LoginFormHandler extends AbstractWebFormHandler {
 		} else if (StringUtil.isNullOrEmptyString(password)) {
 			ctx.setMessage(ctx.cfg().getFieldIsMissing());
 			return PartUtil.LOGIN_PAGE_NAME;
-		} else if (!userManager.hasUserByName(userName)) {
-			ctx.setMessage(ctx.cfg().getLoginIsIncorrect());
-			return PartUtil.LOGIN_PAGE_NAME;
+		} else {
+			boolean hasUser = false;
+			
+			try {
+				hasUser = userManager.hasUserByName(userName);
+			} catch (ReadWriteException e) {
+			}
+			
+			if (!hasUser) {
+				ctx.setMessage(ctx.cfg().getLoginIsIncorrect());
+				return PartUtil.LOGIN_PAGE_NAME;
+			}
+		}
+				
+		User user = null;
+		
+		try {
+			user = userManager.getUserByName(userName);
+		} catch (ReadWriteException e) {
 		}
 		
-		User user = userManager.getUserByName(userName);
-		if (!user.hasPassword(password)) {
+		if (user == null)	{
+			ctx.setMessage(ctx.cfg().getUserNameIsUnknown());
+			return PartUtil.LOGIN_PAGE_NAME;
+		} else if (!user.hasPassword(password)) {
 			ctx.setMessage(ctx.cfg().getLoginIsIncorrect());
 			return PartUtil.LOGIN_PAGE_NAME;
 		} else if (user.getStatus().isDisabled()) {

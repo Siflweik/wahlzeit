@@ -23,6 +23,7 @@ package org.wahlzeit.handlers;
 import java.util.*;
 
 import org.wahlzeit.model.AccessRights;
+import org.wahlzeit.model.ReadWriteException;
 import org.wahlzeit.model.User;
 import org.wahlzeit.model.UserLog;
 import org.wahlzeit.model.UserManager;
@@ -83,7 +84,7 @@ public class SignupFormHandler extends AbstractWebFormHandler {
 		} else if (StringUtil.isNullOrEmptyString(emailAddress)) {
 			ctx.setMessage(ctx.cfg().getFieldIsMissing());
 			return PartUtil.SIGNUP_PAGE_NAME;
-		} else if (userManager.hasUserByName(userName)) {
+		} else if (hasUser(userName)) {
 			ctx.setMessage(ctx.cfg().getUserAlreadyExists());
 			return PartUtil.SIGNUP_PAGE_NAME;
 		} else if (!StringUtil.isLegalUserName(userName)) {
@@ -108,18 +109,22 @@ public class SignupFormHandler extends AbstractWebFormHandler {
 
 		long confirmationCode = userManager.createConfirmationCode();
 		User user = new User(userName, password, emailAddress, confirmationCode);
-		userManager.addUser(user);
 		
-		userManager.emailWelcomeMessage(ctx, user);
-		ctx.setClient(user);
-		
-		userManager.saveUser(user);
-		
-		StringBuffer sb = UserLog.createActionEntry("Signup");
-		UserLog.addCreatedObject(sb, "User", userName);
-		UserLog.log(sb);
-		
-		ctx.setTwoLineMessage(ctx.cfg().getConfirmationEmailWasSent(), ctx.cfg().getContinueWithShowUserHome());
+		try {
+			userManager.addUser(user);
+			userManager.emailWelcomeMessage(ctx, user);
+			ctx.setClient(user);
+			
+			userManager.saveUser(user);
+			
+			StringBuffer sb = UserLog.createActionEntry("Signup");
+			UserLog.addCreatedObject(sb, "User", userName);
+			UserLog.log(sb);
+			
+			ctx.setTwoLineMessage(ctx.cfg().getConfirmationEmailWasSent(), ctx.cfg().getContinueWithShowUserHome());
+		} catch (ReadWriteException e) {
+			ctx.setTwoLineMessage(ctx.cfg().getPleaseTryAgain(), ctx.cfg().getContinueWithShowUserHome());
+		}	
 
 		return PartUtil.SHOW_NOTE_PAGE_NAME;
 	}

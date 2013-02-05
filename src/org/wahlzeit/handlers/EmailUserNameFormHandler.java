@@ -65,7 +65,13 @@ public class EmailUserNameFormHandler extends AbstractWebFormHandler {
 		}
 
 		UserManager userManager = UserManager.getInstance();	
-		User user = userManager.getUserByEmailAddress(emailAddress);
+		User user = null;
+		
+		try {
+			user = userManager.getUserByEmailAddress(emailAddress);
+		} catch (ReadWriteException e) {
+		}
+		
 		if (user == null) {
 			ctx.setMessage(ctx.cfg().getUnknownEmailAddress());
 			return PartUtil.EMAIL_PASSWORD_PAGE_NAME;

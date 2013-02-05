@@ -78,10 +78,13 @@ public class SendEmailFormHandler extends AbstractWebFormHandler {
 		
 		String id = ctx.getAndSaveAsString(args, Photo.ID);
 		part.addString(Photo.ID, id);
-		Photo photo = PhotoManager.getPhoto(id);
-		part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));
 
-		part.maskAndAddString(USER, photo.getOwnerName());
+		Photo photo = getPhoto(id);
+			
+		if (photo != null)	{
+			part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));
+			part.maskAndAddString(USER, photo.getOwnerName());
+		}
 		
 		User user = (User) ctx.getClient();
 		part.addString(USER_LANGUAGE, ctx.cfg().asValueString(user.getLanguage()));
@@ -94,7 +97,18 @@ public class SendEmailFormHandler extends AbstractWebFormHandler {
 	 * 
 	 */
 	protected boolean isWellFormedPost(UserSession ctx, Map args) {
-		return PhotoManager.getPhoto(ctx.getAsString(args, Photo.ID)) != null;
+		return getPhoto(ctx.getAsString(args, Photo.ID)) != null;
+	}
+	
+	protected Photo getPhoto(String id)	{
+		Photo photo = null;
+		
+		try {
+			photo = PhotoManager.getPhoto(id);
+		} catch (PhotoException e) {
+		}
+		
+		return photo;		
 	}
 	
 	/**
@@ -102,29 +116,46 @@ public class SendEmailFormHandler extends AbstractWebFormHandler {
 	 */
 	protected String doHandlePost(UserSession ctx, Map args) {
 		String id = ctx.getAndSaveAsString(args, Photo.ID);
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = getPhoto(id);
+		
+		boolean success = false;
+		
+		if (photo != null)	{
+      		String emailSubject = ctx.getAndSaveAsString(args, EMAIL_SUBJECT);
+    		String emailBody = ctx.getAndSaveAsString(args, EMAIL_BODY);
+    		if ((emailSubject.length() > 128) || (emailBody.length() > 1024)) {
+    			ctx.setMessage(ctx.cfg().getInputIsTooLong());
+    			return PartUtil.SEND_EMAIL_PAGE_NAME;			
+    		}
+    
+    		UserManager userManager = UserManager.getInstance();
+    		User toUser = null;
+    		
+			try {
+				toUser = userManager.getUserByName(photo.getOwnerName());
+			} catch (ReadWriteException e) {
+			}
+    		
+			if (toUser != null)	{			
+    			User fromUser = (User) ctx.getClient();
+        
+        		emailSubject = ctx.cfg().getSendEmailSubjectPrefix() + emailSubject;
+        		emailBody = ctx.cfg().getSendEmailBodyPrefix() + emailBody + ctx.cfg().getSendEmailBodyPostfix();
+        
+        		EmailService emailService = EmailServiceManager.getDefaultService();
+        		emailService.sendEmailIgnoreException(fromUser.getEmailAddress(), toUser.getEmailAddress(), ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
+        
+        		UserLog.logPerformedAction("SendEmail");
+        		
+        		ctx.setMessage(ctx.cfg().getEmailWasSent() + toUser.getName() + "!");
+        		success = true;
+			}
+		} 
 
-		String emailSubject = ctx.getAndSaveAsString(args, EMAIL_SUBJECT);
-		String emailBody = ctx.getAndSaveAsString(args, EMAIL_BODY);
-		if ((emailSubject.length() > 128) || (emailBody.length() > 1024)) {
-			ctx.setMessage(ctx.cfg().getInputIsTooLong());
-			return PartUtil.SEND_EMAIL_PAGE_NAME;			
+		if (!success)	{
+			ctx.setMessage(ctx.cfg().getPleaseTryAgain());
 		}
-
-		UserManager userManager = UserManager.getInstance();
-		User toUser = userManager.getUserByName(photo.getOwnerName());
-		User fromUser = (User) ctx.getClient();
-
-		emailSubject = ctx.cfg().getSendEmailSubjectPrefix() + emailSubject;
-		emailBody = ctx.cfg().getSendEmailBodyPrefix() + emailBody + ctx.cfg().getSendEmailBodyPostfix();
-
-		EmailService emailService = EmailServiceManager.getDefaultService();
-		emailService.sendEmailIgnoreException(fromUser.getEmailAddress(), toUser.getEmailAddress(), ctx.cfg().getAuditEmailAddress(), emailSubject, emailBody);
-
-		UserLog.logPerformedAction("SendEmail");
-		
-		ctx.setMessage(ctx.cfg().getEmailWasSent() + toUser.getName() + "!");
-		
+				
 		return PartUtil.SHOW_NOTE_PAGE_NAME;
 	}
 	

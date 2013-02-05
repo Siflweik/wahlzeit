@@ -124,10 +124,14 @@ public abstract class ModelMain extends AbstractMain {
 	 * 
 	 */
 	public static void saveAll() throws SQLException {
-		PhotoCaseManager.getInstance().savePhotoCases();
-		PhotoManager.getInstance().savePhotos();			
-		UserManager.getInstance().saveUsers();
-
+		try {
+			PhotoCaseManager.getInstance().savePhotoCases();
+			PhotoManager.getInstance().savePhotos();			
+			UserManager.getInstance().saveUsers();
+		} catch (ReadWriteException | PhotoException e) {
+			// TODO Auto-generated catch block
+		}
+		
 		saveGlobals();
 	}
 

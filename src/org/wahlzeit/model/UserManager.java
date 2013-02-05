@@ -59,7 +59,7 @@ public class UserManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	public boolean hasUserByName(String name) {
+	public boolean hasUserByName(String name) throws ReadWriteException {
 		assertIsNonNullArgument(name, "user-by-name");
 		return hasUserByTag(Tags.asTag(name));
 	}
@@ -67,7 +67,7 @@ public class UserManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	public boolean hasUserByTag(String tag) {
+	public boolean hasUserByTag(String tag) throws ReadWriteException {
 		assertIsNonNullArgument(tag, "user-by-tag");
 		return getUserByTag(tag) != null;
 	}
@@ -82,14 +82,14 @@ public class UserManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	public User getUserByName(String name) {
+	public User getUserByName(String name) throws ReadWriteException {
 		return getUserByTag(Tags.asTag(name));
 	}
 	
 	/**
 	 * 
 	 */
-	public User getUserByTag(String tag) {
+	public User getUserByTag(String tag) throws ReadWriteException {
 		assertIsNonNullArgument(tag, "user-by-tag");
 
 		User result = doGetUserByTag(tag);
@@ -98,8 +98,8 @@ public class UserManager extends ObjectManager {
 			try {
 				PreparedStatement stmt = getReadingStatement("SELECT * FROM users WHERE name_as_tag = ?");
 				result = (User) readObject(stmt, tag);
-			} catch (SQLException sex) {
-				SysLog.logThrowable(sex);
+			} catch (ReadWriteException ex) {
+				handleReadWriteException(ex);
 			}
 			
 			if (result != null) {
@@ -121,30 +121,34 @@ public class UserManager extends ObjectManager {
 	 * 
 	 * @methodtype factory
 	 */
-	protected User createObject(ResultSet rset) throws SQLException {
+	protected User createObject(ResultSet rset) throws ReadWriteException {
 		User result = null;
 
-		AccessRights rights = AccessRights.getFromInt(rset.getInt("rights"));
-		if (rights == AccessRights.USER) {
-			result = new User();
-			result.readFrom(rset);
-		} else if (rights == AccessRights.MODERATOR) {
-			result = new Moderator();
-			result.readFrom(rset);
-		} else if (rights == AccessRights.ADMINISTRATOR) {
-			result = new Administrator();
-			result.readFrom(rset);
-		} else {
-			SysLog.logInfo("received NONE rights value");
+		try	{
+    		AccessRights rights = AccessRights.getFromInt(rset.getInt("rights"));
+    		if (rights == AccessRights.USER) {
+    			result = new User();
+    			result.readFrom(rset);
+    		} else if (rights == AccessRights.MODERATOR) {
+    			result = new Moderator();
+    			result.readFrom(rset);
+    		} else if (rights == AccessRights.ADMINISTRATOR) {
+    			result = new Administrator();
+    			result.readFrom(rset);
+    		} else {
+    			SysLog.logInfo("received NONE rights value");
+    		}
+		} catch (SQLException ex)	{
+			handleSQLException(ex);
 		}
-
+		
 		return result;
 	}
 	
 	/**
 	 * 
 	 */
-	public void addUser(User user) {
+	public void addUser(User user) throws ReadWriteException {
 		assertIsNonNullArgument(user);
 		assertIsUnknownUserAsIllegalArgument(user);
 
@@ -152,8 +156,8 @@ public class UserManager extends ObjectManager {
 			int id = user.getId();
 			PreparedStatement stmt = getReadingStatement("INSERT INTO users(id) VALUES(?)");
 			createObject(user, stmt, id);
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException ex) {
+			handleReadWriteException(ex);
 		}
 		
 		doAddUser(user);		
@@ -169,15 +173,15 @@ public class UserManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	public void deleteUser(User user) {
+	public void deleteUser(User user) throws ReadWriteException {
 		assertIsNonNullArgument(user);
 		doDeleteUser(user);
 
 		try {
 			PreparedStatement stmt = getReadingStatement("DELETE FROM users WHERE id = ?");
 			deleteObject(user, stmt);
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException ex) {
+			handleReadWriteException(ex);
 		}
 		
 		assertIsUnknownUserAsIllegalState(user);
@@ -193,7 +197,7 @@ public class UserManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	public void loadUsers(Collection<User> result) {
+	public void loadUsers(Collection<User> result) throws ReadWriteException {
 		try {
 			PreparedStatement stmt = getReadingStatement("SELECT * FROM users");
 			readObjects(result, stmt);
@@ -205,8 +209,8 @@ public class UserManager extends ObjectManager {
 					SysLog.logValueWithInfo("user", user.getName(), "user had already been loaded");
 				}
 			}
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException ex) {
+			handleReadWriteException(ex);
 		}
 		
 		SysLog.logInfo("loaded all users");
@@ -258,19 +262,20 @@ public class UserManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	public void saveUser(User user) {
+	public void saveUser(User user) throws ReadWriteException {
 		try {
 			PreparedStatement stmt = getUpdatingStatement("SELECT * FROM users WHERE id = ?");
 			updateObject(user, stmt);
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException ex) {
+			handleReadWriteException(ex);
 		}
 	}
 	
 	/**
+	 * @throws ReadWriteException 
 	 * 
 	 */
-	public void removeUser(User user) {
+	public void removeUser(User user) throws ReadWriteException {
 		saveUser(user);
 		users.remove(user.getNameAsTag());
 	}
@@ -278,32 +283,33 @@ public class UserManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	public void saveUsers() {
+	public void saveUsers() throws ReadWriteException {
 		try {
 			PreparedStatement stmt = getUpdatingStatement("SELECT * FROM users WHERE id = ?");
 			updateObjects(users.values(), stmt);
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException ex) {
+			handleReadWriteException(ex);
 		}
 	}
 	
 	/**
+	 * @throws ReadWriteException 
 	 * 
 	 */
-	public User getUserByEmailAddress(String emailAddress) {
+	public User getUserByEmailAddress(String emailAddress) throws ReadWriteException {
 		return getUserByEmailAddress(EmailAddress.getFromString(emailAddress));
 	}
 
 	/**
 	 * 
 	 */
-	public User getUserByEmailAddress(EmailAddress emailAddress) {
+	public User getUserByEmailAddress(EmailAddress emailAddress) throws ReadWriteException {
 		User result = null;
 		try {
 			PreparedStatement stmt = getReadingStatement("SELECT * FROM users WHERE email_address = ?");
 			result = (User) readObject(stmt, emailAddress.asString());
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException ex) {
+			handleReadWriteException(ex);
 		}
 		
 		if (result != null) {
@@ -320,9 +326,10 @@ public class UserManager extends ObjectManager {
 	
 	/**
 	 * 
+	 * @throws ReadWriteException 
 	 * @methodtype assertion
 	 */
-	protected void assertIsUnknownUserAsIllegalArgument(User user) {
+	protected void assertIsUnknownUserAsIllegalArgument(User user) throws ReadWriteException {
 		if (hasUserByTag(user.getNameAsTag())) {
 			throw new IllegalArgumentException(user.getName() + "is already known");
 		}
@@ -330,9 +337,10 @@ public class UserManager extends ObjectManager {
 	
 	/**
 	 * 
+	 * @throws ReadWriteException 
 	 * @methodtype assertion
 	 */
-	protected void assertIsUnknownUserAsIllegalState(User user) {
+	protected void assertIsUnknownUserAsIllegalState(User user) throws ReadWriteException {
 		if (hasUserByTag(user.getNameAsTag())) {
 			throw new IllegalStateException(user.getName() + "should not be known");
 		}

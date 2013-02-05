@@ -60,28 +60,28 @@ public class PhotoManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	public static final boolean hasPhoto(String id) {
+	public static final boolean hasPhoto(String id) throws PhotoException {
 		return hasPhoto(PhotoId.getId(id));
 	}
 	
 	/**
 	 * 
 	 */
-	public static final boolean hasPhoto(PhotoId id) {
+	public static final boolean hasPhoto(PhotoId id) throws PhotoException {
 		return getPhoto(id) != null;
 	}
 	
 	/**
 	 * 
 	 */
-	public static final Photo getPhoto(String id) {
+	public static final Photo getPhoto(String id) throws PhotoException {
 		return getPhoto(PhotoId.getId(id));
 	}
 	
 	/**
 	 * 
 	 */
-	public static final Photo getPhoto(PhotoId id) {
+	public static final Photo getPhoto(PhotoId id) throws PhotoException {
 		return instance.getPhotoFromId(id);
 	}
 	
@@ -103,7 +103,7 @@ public class PhotoManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	public Photo getPhotoFromId(PhotoId id) {
+	public Photo getPhotoFromId(PhotoId id) throws PhotoException {
 		if (id.isNullId()) {
 			return null;
 		}
@@ -114,8 +114,8 @@ public class PhotoManager extends ObjectManager {
 			try {
 				PreparedStatement stmt = getReadingStatement("SELECT * FROM photos WHERE id = ?");
 				result = (Photo) readObject(stmt, id.asInt());
-			} catch (SQLException sex) {
-				SysLog.logThrowable(sex);
+			} catch (ReadWriteException ex) {
+				handleUnderlyingException(ex);
 			}
 			if (result != null) {
 				doAddPhoto(result);
@@ -136,14 +136,18 @@ public class PhotoManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	protected Photo createObject(ResultSet rset) throws SQLException {
-		return PhotoFactory.getInstance().createPhoto(rset);
+	protected Photo createObject(ResultSet rset) throws ReadWriteException {
+		try {
+			return PhotoFactory.getInstance().createPhoto(rset);
+		} catch (PhotoException e) {
+			throw (ReadWriteException)e.getCause();
+		}
 	}
 	
 	/**
 	 * 
 	 */
-	public void addPhoto(Photo photo) {
+	public void addPhoto(Photo photo) throws PhotoException {
 		PhotoId id = photo.getId();
 		assertIsNewPhoto(id);
 		doAddPhoto(photo);
@@ -152,9 +156,13 @@ public class PhotoManager extends ObjectManager {
 			PreparedStatement stmt = getReadingStatement("INSERT INTO photos(id) VALUES(?)");
 			createObject(photo, stmt, id.asInt());
 			Wahlzeit.saveGlobals();
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException | SQLException ex) {
+			handleUnderlyingException(ex);
 		}
+	}
+	
+	protected void handleUnderlyingException(Exception ex) throws PhotoException	{
+		throw new PhotoException(ex);
 	}
 	
 	/**
@@ -168,7 +176,7 @@ public class PhotoManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	public void loadPhotos(Collection<Photo> result) {
+	public void loadPhotos(Collection<Photo> result) throws PhotoException {
 		try {
 			PreparedStatement stmt = getReadingStatement("SELECT * FROM photos");
 			readObjects(result, stmt);
@@ -180,8 +188,8 @@ public class PhotoManager extends ObjectManager {
 					SysLog.logValueWithInfo("photo", photo.getId().asString(), "photo had already been loaded");
 				}
 			}
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException ex) {
+			handleUnderlyingException(ex);
 		}
 		
 		SysLog.logInfo("loaded all photos");
@@ -190,37 +198,38 @@ public class PhotoManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	public void savePhoto(Photo photo) {
+	public void savePhoto(Photo photo) throws PhotoException {
 		try {
 			PreparedStatement stmt = getUpdatingStatement("SELECT * FROM photos WHERE id = ?");
 			updateObject(photo, stmt);
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException ex) {
+			handleUnderlyingException(ex);
 		}
 	}
 	
 	/**
 	 * 
 	 */
-	public void savePhotos() {
+	public void savePhotos() throws PhotoException {
 		try {
 			PreparedStatement stmt = getUpdatingStatement("SELECT * FROM photos WHERE id = ?");
 			updateObjects(photoCache.values(), stmt);
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException ex) {
+			handleUnderlyingException(ex);
 		}
 	}
 	
 	/**
 	 * 
 	 */
-	public Set<Photo> findPhotosByOwner(String ownerName) {
+	public Set<Photo> findPhotosByOwner(String ownerName) throws PhotoException {
 		Set<Photo> result = new HashSet<Photo>();
+		
 		try {
 			PreparedStatement stmt = getReadingStatement("SELECT * FROM photos WHERE owner_name = ?");
 			readObjects(result, stmt, ownerName);
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException ex) {
+			handleUnderlyingException(ex);
 		}
 		
 		for (Iterator<Photo> i = result.iterator(); i.hasNext(); ) {
@@ -233,7 +242,7 @@ public class PhotoManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	public Photo getVisiblePhoto(PhotoFilter filter) {
+	public Photo getVisiblePhoto(PhotoFilter filter) throws PhotoException {
 		Photo result = getPhotoFromFilter(filter);
 		
 		if(result == null) {
@@ -248,7 +257,7 @@ public class PhotoManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	protected Photo getPhotoFromFilter(PhotoFilter filter) {
+	protected Photo getPhotoFromFilter(PhotoFilter filter) throws PhotoException {
 		PhotoId id = filter.getRandomDisplayablePhotoId();
 		Photo result = getPhotoFromId(id);
 		while((result != null) && !result.isVisible()) {
@@ -265,7 +274,7 @@ public class PhotoManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	protected java.util.List<PhotoId> getFilteredPhotoIds(PhotoFilter filter) {
+	protected java.util.List<PhotoId> getFilteredPhotoIds(PhotoFilter filter) throws PhotoException	{
 		java.util.List<PhotoId> result = new LinkedList<PhotoId>();
 
 		try {
@@ -294,8 +303,8 @@ public class PhotoManager extends ObjectManager {
 					}
 				}
 			}
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException | SQLException ex) {
+			handleUnderlyingException(ex);
 		}
 		
 		return result;
@@ -304,7 +313,7 @@ public class PhotoManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	protected PreparedStatement getUpdatingStatementFromConditions(int no) throws SQLException {
+	protected PreparedStatement getUpdatingStatementFromConditions(int no) throws ReadWriteException {
 		String query = "SELECT * FROM tags";
 		if (no > 0) {
 			query += " WHERE";
@@ -323,7 +332,7 @@ public class PhotoManager extends ObjectManager {
 	/**
 	 * 
 	 */
-	protected void updateDependents(Persistent obj) throws SQLException {
+	protected void updateDependents(Persistent obj) throws ReadWriteException {
 		Photo photo = (Photo) obj;
 		
 		PreparedStatement stmt = getReadingStatement("DELETE FROM tags WHERE photo_id = ?");
@@ -332,12 +341,17 @@ public class PhotoManager extends ObjectManager {
 		stmt = getReadingStatement("INSERT INTO tags VALUES(?, ?)");
 		Set<String> tags = new HashSet<String>();
 		photoTagCollector.collect(tags, photo);
-		for (Iterator<String> i = tags.iterator(); i.hasNext(); ) {
-			String tag = i.next();
-			stmt.setString(1, tag);
-			stmt.setInt(2, photo.getId().asInt());
-			SysLog.logQuery(stmt);
-			stmt.executeUpdate();					
+		
+		try	{
+    		for (Iterator<String> i = tags.iterator(); i.hasNext(); ) {
+    			String tag = i.next();
+    			stmt.setString(1, tag);
+    			stmt.setInt(2, photo.getId().asInt());
+    			SysLog.logQuery(stmt);
+    			stmt.executeUpdate();					
+    		}
+		} catch (SQLException ex)	{
+			throw new ReadWriteException(ex);
 		}
 	}
 		
@@ -355,7 +369,14 @@ public class PhotoManager extends ObjectManager {
 	 * @methodtype assertion
 	 */
 	protected void assertIsNewPhoto(PhotoId id) {
-		if (hasPhoto(id)) {
+		boolean hasPhoto = false;
+		
+		try {
+			hasPhoto = hasPhoto(id);
+		} catch (PhotoException e) {
+		}
+		
+		if (hasPhoto) {
 			throw new IllegalStateException("Photo already exists!");
 		}
 	}

@@ -145,8 +145,15 @@ public abstract class AbstractWebPartHandler implements WebPartHandler {
 	 */
 	protected boolean isSavedPhotoVisible(UserSession ctx) {
 		String id = ctx.getAsString(ctx.getSavedArgs(), Photo.ID);
-		Photo photo = PhotoManager.getPhoto(id);
-		return photo.isVisible();
+		
+		try {
+			Photo photo = PhotoManager.getPhoto(id);
+			
+			return photo.isVisible();
+		} catch (PhotoException e) {
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -233,4 +240,29 @@ public abstract class AbstractWebPartHandler implements WebPartHandler {
 		return PartUtil.SHOW_NOTE_PAGE_NAME;
 	}
 
+	protected User getUser(String id)	{
+		try {
+			return UserManager.getInstance().getUserByName(id);
+		} catch (ReadWriteException e) {
+		}
+		
+		return null;
+	}
+	
+	protected boolean hasUser(String name)	{
+		try {
+			return UserManager.getInstance().hasUserByName(name);
+		} catch (ReadWriteException e) {
+			return false;
+		}
+	}
+	
+	protected Photo getPhoto(String id)	{
+		try {
+			return PhotoManager.getPhoto(id);
+		} catch (PhotoException e) {
+		}
+		
+		return null;
+	}
 }

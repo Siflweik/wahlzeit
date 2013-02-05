@@ -48,7 +48,14 @@ public class AdminUserProfileFormHandler extends AbstractWebFormHandler {
 		Map<String, Object> args = ctx.getSavedArgs();
 
 		String userId = ctx.getAndSaveAsString(args, "userId");
-		User user = UserManager.getInstance().getUserByName(userId);
+		
+		User user = null;
+		
+		try {
+			user = UserManager.getInstance().getUserByName(userId);
+		} catch (ReadWriteException e) {
+			return;
+		}
 	
 		Photo photo = user.getUserPhoto();
 		part.addString(Photo.THUMB, getPhotoThumb(ctx, photo));
@@ -73,7 +80,14 @@ public class AdminUserProfileFormHandler extends AbstractWebFormHandler {
 	protected String doHandlePost(UserSession ctx, Map args) {
 		UserManager um = UserManager.getInstance();
 		String userId = ctx.getAndSaveAsString(args, "userId");
-		User user = um.getUserByName(userId);
+		User user = null;
+		
+		try {
+			user = um.getUserByName(userId);
+		} catch (ReadWriteException e) {
+			ctx.setMessage(ctx.cfg().getUserNameIsUnknown());
+			return PartUtil.SHOW_ADMIN_PAGE_NAME;
+		}
 		
 		String status = ctx.getAndSaveAsString(args, User.STATUS);
 		String rights = ctx.getAndSaveAsString(args, User.RIGHTS);
@@ -99,15 +113,25 @@ public class AdminUserProfileFormHandler extends AbstractWebFormHandler {
 		user.setHomePage(StringUtil.asUrl(homePage));
 		user.setNotifyAboutPraise((notifyAboutPraise != null) && notifyAboutPraise.equals("on"));
 
-		um.removeUser(user);
-		user = um.getUserByName(userId);
-		ctx.setSavedArg("userId", userId);
-
-		StringBuffer sb = UserLog.createActionEntry("AdminUserProfile");
-		UserLog.addUpdatedObject(sb, "User", user.getName());
-		UserLog.log(sb);
+		try {
+			um.removeUser(user);
+		} catch (ReadWriteException e) {
+		}
 		
-		ctx.setMessage(ctx.cfg().getProfileUpdateSucceeded());
+		try {
+			user = um.getUserByName(userId);
+			
+			ctx.setSavedArg("userId", userId);
+
+			StringBuffer sb = UserLog.createActionEntry("AdminUserProfile");
+			UserLog.addUpdatedObject(sb, "User", user.getName());
+			UserLog.log(sb);
+			
+			ctx.setMessage(ctx.cfg().getProfileUpdateSucceeded());
+		} catch (ReadWriteException e) {
+			ctx.setMessage(ctx.cfg().getProfileUpdateSucceeded());
+		}
+
 
 		return PartUtil.SHOW_ADMIN_PAGE_NAME;
 	}

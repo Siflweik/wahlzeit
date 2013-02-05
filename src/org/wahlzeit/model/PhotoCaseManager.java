@@ -65,7 +65,12 @@ public class PhotoCaseManager extends ObjectManager {
 	 */
 	protected void initialize() {
 		Collection<PhotoCase> opc = new LinkedList<PhotoCase>();
-		loadOpenPhotoCases(opc);
+		
+		try {
+			loadOpenPhotoCases(opc);
+		} catch (ReadWriteException e) {
+		}
+		
 		for (PhotoCase pc : opc) {
 			openPhotoCases.put(pc.getId(), pc);
 		}
@@ -75,7 +80,7 @@ public class PhotoCaseManager extends ObjectManager {
 	 * 
 	 * @methodtype factory
 	 */
-	protected PhotoCase createObject(ResultSet rset) throws SQLException {
+	protected PhotoCase createObject(ResultSet rset) throws ReadWriteException {
 		return new PhotoCase(rset);
 	}
 	
@@ -83,14 +88,14 @@ public class PhotoCaseManager extends ObjectManager {
 	 * 
 	 * @methodtype get
 	 */
-	public PhotoCase getPhotoCase(int id) {
+	public PhotoCase getPhotoCase(int id) throws ReadWriteException {
 		PhotoCase result = openPhotoCases.get(id);
 		if (result == null) {
 			try {
 				PreparedStatement stmt = getReadingStatement("SELECT * FROM cases WHERE id = ?");
 				result = (PhotoCase) readObject(stmt, id);
-			} catch (SQLException sex) {
-				SysLog.logThrowable(sex);
+			} catch (ReadWriteException ex) {
+				handleReadWriteException(ex);
 			}
 		}
 		
@@ -101,7 +106,7 @@ public class PhotoCaseManager extends ObjectManager {
 	 * 
 	 * @methodtype command
 	 */
-	public void addPhotoCase(PhotoCase myCase) {
+	public void addPhotoCase(PhotoCase myCase) throws ReadWriteException {
 		openPhotoCases.put(myCase.getId(), myCase);
 		try {
 			PreparedStatement stmt1 = getReadingStatement("INSERT INTO cases(id) VALUES(?)");
@@ -109,8 +114,8 @@ public class PhotoCaseManager extends ObjectManager {
 			PreparedStatement stmt2 = getUpdatingStatement("SELECT * FROM cases WHERE id = ?");
 			updateObject(myCase, stmt2);
 			//@FIXME Main.saveGlobals();
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException ex) {
+			handleReadWriteException(ex);
 		}
 	}
 	
@@ -118,13 +123,13 @@ public class PhotoCaseManager extends ObjectManager {
 	 * 
 	 * @methodtype command
 	 */
-	public void removePhotoCase(PhotoCase myCase) {
+	public void removePhotoCase(PhotoCase myCase) throws ReadWriteException {
 		openPhotoCases.remove(myCase.getId());
 		try {
 			PreparedStatement stmt = getUpdatingStatement("SELECT * FROM cases WHERE id = ?");
 			updateObject(myCase, stmt);
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException ex) {
+			handleReadWriteException(ex);
 		}
 	}	
 	
@@ -132,12 +137,12 @@ public class PhotoCaseManager extends ObjectManager {
 	 * 
 	 * @methodtype command
 	 */
-	public void loadOpenPhotoCases(Collection<PhotoCase> result) {
+	public void loadOpenPhotoCases(Collection<PhotoCase> result) throws ReadWriteException {
 		try {
 			PreparedStatement stmt = getReadingStatement("SELECT * FROM cases WHERE was_decided = FALSE");
 			readObjects(result, stmt);
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException ex) {
+			handleReadWriteException(ex);
 		}
 		
 		SysLog.logInfo("loaded all open photo cases");
@@ -147,12 +152,12 @@ public class PhotoCaseManager extends ObjectManager {
 	 * 
 	 * @methodtype command
 	 */
-	public void savePhotoCases() {
+	public void savePhotoCases() throws ReadWriteException {
 		try {
 			PreparedStatement stmt = getUpdatingStatement("SELECT * FROM cases WHERE id = ?");
 			updateObjects(openPhotoCases.values(), stmt);
-		} catch (SQLException sex) {
-			SysLog.logThrowable(sex);
+		} catch (ReadWriteException ex) {
+			handleReadWriteException(ex);
 		}
 	}
 	

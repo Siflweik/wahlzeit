@@ -86,6 +86,7 @@ public interface ModelConfig extends Configuration {
 
 	// FLAG_PHOTO_FORM
 	public String getModeratorWasInformed();
+	public String getPleaseTryAgain();
 	
 	// SEND_EMAIL_FORM
 	public String getNeedToSignupFirst();
@@ -117,6 +118,7 @@ public interface ModelConfig extends Configuration {
 	public String getUserNameIsUnknown();
 	public String getSendPasswordEmailSubject();
 	public String getPasswordWasEmailed();
+	public String getPasswordEmailFailed();
 	
 	// SET_LANGUAGE_PAGE
 	public String getNewLanguageSet();
@@ -136,6 +138,9 @@ public interface ModelConfig extends Configuration {
 	// EDIT_USER_PROFILE_FORM
 	public String getProfileUpdateSucceeded();
 
+	// 
+	public String getProfileUpdateFailed();
+	
 	// CHANGE_PASSWORD_FORM
 	public String getPasswordChangeSucceeded();
 

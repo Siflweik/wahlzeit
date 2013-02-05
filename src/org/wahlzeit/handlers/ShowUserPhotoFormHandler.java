@@ -68,7 +68,7 @@ public class ShowUserPhotoFormHandler extends AbstractWebFormHandler {
 	 */
 	protected boolean isWellFormedPost(UserSession ctx, Map args) {
 		String id = ctx.getAsString(args, Photo.ID);
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = getPhoto(id);
 		return (photo != null) && ctx.isPhotoOwner(photo);
 	}
 	
@@ -79,10 +79,10 @@ public class ShowUserPhotoFormHandler extends AbstractWebFormHandler {
 		String result = PartUtil.SHOW_USER_HOME_PAGE_NAME;
 		
 		String id = ctx.getAndSaveAsString(args, Photo.ID);
-		Photo photo = PhotoManager.getPhoto(id);
+		Photo photo = getPhoto(id);
 
 		UserManager userManager = UserManager.getInstance();
-		User user = userManager.getUserByName(photo.getOwnerName());
+		User user = getUser(photo.getOwnerName());
 		if (ctx.isFormType(args, "edit")) {
 			ctx.setPhoto(photo);
 			result = PartUtil.EDIT_USER_PHOTO_PAGE_NAME;
@@ -91,18 +91,24 @@ public class ShowUserPhotoFormHandler extends AbstractWebFormHandler {
 			result = PartUtil.TELL_FRIEND_PAGE_NAME;
 		} else if (ctx.isFormType(args, "select")) {
 			user.setUserPhoto(photo);
-			userManager.saveUser(user);
-			UserLog.logPerformedAction("SelectUserPhoto");
+			
+			try {
+				userManager.saveUser(user);
+				UserLog.logPerformedAction("SelectUserPhoto");
+			} catch (ReadWriteException e) {
+			}						
 		} else if (ctx.isFormType(args, "delete")) {
 			photo.setStatus(photo.getStatus().asDeleted(true));
 			if (user.getUserPhoto() == photo) {
 				user.setUserPhoto(null);
 			}
-			userManager.saveUser(user);
-			UserLog.logPerformedAction("DeleteUserPhoto");
+			try {
+				userManager.saveUser(user);
+				UserLog.logPerformedAction("DeleteUserPhoto");
+			} catch (ReadWriteException e) {
+			}
 		}
 		
 		return result;
-	}
-	
+	}	
 }

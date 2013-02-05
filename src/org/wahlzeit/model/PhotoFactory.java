@@ -91,8 +91,12 @@ public class PhotoFactory {
 	/**
 	 * 
 	 */
-	public Photo createPhoto(ResultSet rs) throws SQLException {
-		return new Photo(rs);
+	public Photo createPhoto(ResultSet rs) throws PhotoException {
+		try {
+			return new Photo(rs);
+		} catch (ReadWriteException e) {
+			throw new PhotoException(e);
+		}
 	}
 	
 	/**

@@ -404,6 +404,10 @@ public abstract class AbstractModelConfig extends AbstractConfig implements Mode
 	public String getConfirmAccountFailed() {
 		return doGetValue("ConfirmAccountFailed"); 
 	}
+	
+	public String getPleaseTryAgain()	{
+		return doGetValue("PleaseTryAgain"); 
+	}
 
 	/**
 	 * 
@@ -454,6 +458,10 @@ public abstract class AbstractModelConfig extends AbstractConfig implements Mode
 		return doGetValue("PasswordWasEmailed"); 
 	}
 
+	public String getPasswordEmailFailed()	{
+		return doGetValue("PasswordEmailFailed"); 
+	}
+	
 	/**
 	 * 
 	 */
@@ -510,6 +518,10 @@ public abstract class AbstractModelConfig extends AbstractConfig implements Mode
 		return doGetValue("ProfileUpdateSucceeded"); 
 	}
 
+	public String getProfileUpdateFailed()	{
+		return doGetValue("ProfileUpdateFailed"); 
+	}
+	
 	/**
 	 * 
 	 */

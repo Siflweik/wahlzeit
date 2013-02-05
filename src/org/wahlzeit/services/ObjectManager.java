@@ -23,6 +23,8 @@ package org.wahlzeit.services;
 import java.sql.*;
 import java.util.*;
 
+import org.wahlzeit.model.ReadWriteException;
+
 /**
  * An ObjectManager creates/reads/updates/deletes Persistent (objects) from a (relational) Database.
  * It is an abstract superclass that relies an inheritance interface and the Persistent interface.
@@ -36,127 +38,166 @@ public abstract class ObjectManager {
 	/**
 	 * 
 	 */
-	public DatabaseConnection getDatabaseConnection() throws SQLException {
+	public DatabaseConnection getDatabaseConnection() throws ReadWriteException {
 		return ContextManager.getDatabaseConnection();
 	}
 	    
 	/**
 	 * 
 	 */
-	protected PreparedStatement getReadingStatement(String stmt) throws SQLException {
+	protected PreparedStatement getReadingStatement(String stmt) throws ReadWriteException {
     	DatabaseConnection dbc = getDatabaseConnection();
-    	return dbc.getReadingStatement(stmt);
-	}
-	
-	/**
-	 * 
-	 */
-	protected PreparedStatement getUpdatingStatement(String stmt) throws SQLException {
-    	DatabaseConnection dbc = getDatabaseConnection();
-    	return dbc.getUpdatingStatement(stmt);
-	}
-	
-	/**
-	 * 
-	 */
-	protected Persistent readObject(PreparedStatement stmt, int value) throws SQLException {
-		Persistent result = null;
-		stmt.setInt(1, value);
-		SysLog.logQuery(stmt);
-		ResultSet rset = stmt.executeQuery();
-		if (rset.next()) {
-			result = createObject(rset);
+    	try {
+			return dbc.getReadingStatement(stmt);
+		} catch (SQLException e) {
+			throw new ReadWriteException(e);
 		}
-
+	}
+	
+	/**
+	 * 
+	 */
+	protected PreparedStatement getUpdatingStatement(String stmt) throws ReadWriteException {
+    	DatabaseConnection dbc = getDatabaseConnection();
+    	try {
+			return dbc.getUpdatingStatement(stmt);
+		} catch (SQLException e) {
+			throw new ReadWriteException(e);
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	protected Persistent readObject(PreparedStatement stmt, int value) throws ReadWriteException {
+		Persistent result = null;
+		
+		try	{
+    		stmt.setInt(1, value);
+    		SysLog.logQuery(stmt);
+    		ResultSet rset = stmt.executeQuery();
+    		
+    		if (rset.next()) {
+    			result = createObject(rset);
+    		}
+		} catch (SQLException e) {
+			throw new ReadWriteException(e);
+		}
+		
 		return result;
 	}
 	
 	/**
 	 * 
 	 */
-	protected Persistent readObject(PreparedStatement stmt, String value) throws SQLException {
-		Persistent result = null;
-		stmt.setString(1, value);
-		SysLog.logQuery(stmt);
-		ResultSet rset = stmt.executeQuery();
-		if (rset.next()) {
-			result = createObject(rset);
+	protected Persistent readObject(PreparedStatement stmt, String value) throws ReadWriteException {
+   		Persistent result = null;
+   		
+		try	{
+    		stmt.setString(1, value);
+    		SysLog.logQuery(stmt);
+    		ResultSet rset = stmt.executeQuery();
+    		if (rset.next()) {
+    			result = createObject(rset);
+    		}
+		} catch (SQLException ex)	{
+			throw new ReadWriteException(ex);
 		}
-
+		
 		return result;
 	}
 	
 	/**
 	 * 
 	 */
-	protected void readObjects(Collection result, PreparedStatement stmt) throws SQLException {
-		SysLog.logQuery(stmt);
-		ResultSet rset = stmt.executeQuery();
-		while (rset.next()) {
-			Persistent obj = createObject(rset);
-			result.add(obj);
-		}
+	protected void readObjects(Collection result, PreparedStatement stmt) throws ReadWriteException {
+    	try	{
+    		SysLog.logQuery(stmt);
+    		ResultSet rset = stmt.executeQuery();
+    		while (rset.next()) {
+    			Persistent obj = createObject(rset);
+    			result.add(obj);
+    		}
+    	} catch (SQLException ex)	{
+    		throw new ReadWriteException(ex);
+    	}
 	}
 		
 	/**
 	 * 
 	 */
-	protected void readObjects(Collection result, PreparedStatement stmt, String value) throws SQLException {
-		stmt.setString(1, value);
-		SysLog.logQuery(stmt);
-		ResultSet rset = stmt.executeQuery();
-		while (rset.next()) {
-			Persistent obj = createObject(rset);
-			result.add(obj);
-		}
+	protected void readObjects(Collection result, PreparedStatement stmt, String value) throws ReadWriteException {
+		try	{
+			stmt.setString(1, value);
+    		SysLog.logQuery(stmt);
+    		ResultSet rset = stmt.executeQuery();
+    		while (rset.next()) {
+    			Persistent obj = createObject(rset);
+    			result.add(obj);
+    		}
+    	} catch (SQLException ex)	{
+    		throw new ReadWriteException(ex);
+    	}
 	}
 		
 	/**
 	 * 
 	 */
-	protected abstract Persistent createObject(ResultSet rset) throws SQLException;
+	protected abstract Persistent createObject(ResultSet rset) throws ReadWriteException;
 
 	/**
 	 * 
 	 */
-	protected void createObject(Persistent obj, PreparedStatement stmt, int value) throws SQLException {
-		stmt.setInt(1, value);
-		SysLog.logQuery(stmt);
-		stmt.executeUpdate();
-	}
-	
-	/**
-	 * 
-	 */
-	protected void createObject(Persistent obj, PreparedStatement stmt, String value) throws SQLException {
-		stmt.setString(1, value);
-		SysLog.logQuery(stmt);
-		stmt.executeUpdate();
-	}
-	
-	/**
-	 * 
-	 */
-	protected void updateObject(Persistent obj, PreparedStatement stmt) throws SQLException {
-		if (obj.isDirty()) {
-			obj.writeId(stmt, 1);
+	protected void createObject(Persistent obj, PreparedStatement stmt, int value) throws ReadWriteException {
+		try	{
+			stmt.setInt(1, value);
 			SysLog.logQuery(stmt);
-			ResultSet rset = stmt.executeQuery();
-			if (rset.next()) {
-				obj.writeOn(rset);
-				rset.updateRow();
-				updateDependents(obj);
-				obj.resetWriteCount();
-			} else {
-				SysLog.logError("trying to update non-existent object: " + obj.getIdAsString() + "(" + obj.toString() + ")");
-			}
-		}
+			stmt.executeUpdate();
+		} catch (SQLException ex)	{
+    		throw new ReadWriteException(ex);
+    	}
 	}
 	
 	/**
 	 * 
 	 */
-	protected void updateObjects(Collection coll, PreparedStatement stmt) throws SQLException {
+	protected void createObject(Persistent obj, PreparedStatement stmt, String value) throws ReadWriteException {
+		try	{
+			stmt.setString(1, value);
+    		SysLog.logQuery(stmt);
+    		stmt.executeUpdate();
+    	} catch (SQLException e) {
+    		throw new ReadWriteException(e);
+    	}
+	}
+	
+	/**
+	 * 
+	 */
+	protected void updateObject(Persistent obj, PreparedStatement stmt) throws ReadWriteException {
+		try	{
+			if (obj.isDirty()) {
+    			obj.writeId(stmt, 1);
+    			SysLog.logQuery(stmt);
+    			ResultSet rset = stmt.executeQuery();
+    			if (rset.next()) {
+    				obj.writeOn(rset);
+    				rset.updateRow();
+    				updateDependents(obj);
+    				obj.resetWriteCount();
+    			} else {
+    				SysLog.logError("trying to update non-existent object: " + obj.getIdAsString() + "(" + obj.toString() + ")");
+    			}
+    		}
+    	} catch (SQLException e) {
+    		throw new ReadWriteException(e);
+    	}
+	}
+	
+	/**
+	 * 
+	 */
+	protected void updateObjects(Collection coll, PreparedStatement stmt) throws ReadWriteException {
 		for (Iterator i = coll.iterator(); i.hasNext(); ) {
 			Persistent obj = (Persistent) i.next();
 			updateObject(obj, stmt);
@@ -166,17 +207,21 @@ public abstract class ObjectManager {
 	/**
 	 * 
 	 */
-	protected void updateDependents(Persistent obj) throws SQLException {
+	protected void updateDependents(Persistent obj) throws ReadWriteException {
 		// do nothing
 	}
 	
 	/**
 	 * 
 	 */
-	protected void deleteObject(Persistent obj, PreparedStatement stmt) throws SQLException {
-		obj.writeId(stmt, 1);
-		SysLog.logQuery(stmt);
-		stmt.executeUpdate();
+	protected void deleteObject(Persistent obj, PreparedStatement stmt) throws ReadWriteException {
+		try {
+			obj.writeId(stmt, 1);
+			SysLog.logQuery(stmt);
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			throw new ReadWriteException(e);
+		}
 	}
 
 	/**
@@ -194,5 +239,13 @@ public abstract class ObjectManager {
 			throw new IllegalArgumentException(label + " should not be null");
 		}
 	}
-
+	
+	protected void handleReadWriteException(ReadWriteException ex) throws ReadWriteException	{
+		SysLog.logThrowable(ex);
+		throw ex;
+	}
+	
+	protected void handleSQLException(SQLException ex) throws ReadWriteException	{
+		handleReadWriteException(new ReadWriteException(ex));
+	}
 }
